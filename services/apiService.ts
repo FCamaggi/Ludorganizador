@@ -1,6 +1,7 @@
 import { GameEvent, GameTable, FreeGame, AuthUser } from '../types';
 
-const API_URL = (import.meta.env.VITE_API_URL as string) || 'http://localhost:3001/api';
+const API_URL =
+  (import.meta.env.VITE_API_URL as string) || 'http://localhost:3001/api';
 
 // Helper para obtener el token
 const getToken = (): string | null => {
@@ -17,17 +18,21 @@ const authHeaders = () => {
   const token = getToken();
   return {
     'Content-Type': 'application/json',
-    ...(token && { Authorization: `Bearer ${token}` })
+    ...(token && { Authorization: `Bearer ${token}` }),
   };
 };
 
 // ============ AUTH ============
 
-export const register = async (name: string, email: string, password: string): Promise<AuthUser> => {
+export const register = async (
+  name: string,
+  email: string,
+  password: string
+): Promise<AuthUser> => {
   const res = await fetch(`${API_URL}/auth/register`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ name, email, password })
+    body: JSON.stringify({ name, email, password }),
   });
 
   if (!res.ok) {
@@ -41,11 +46,14 @@ export const register = async (name: string, email: string, password: string): P
   return authUser;
 };
 
-export const login = async (email: string, password: string): Promise<AuthUser> => {
+export const login = async (
+  email: string,
+  password: string
+): Promise<AuthUser> => {
   const res = await fetch(`${API_URL}/auth/login`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ email, password })
+    body: JSON.stringify({ email, password }),
   });
 
   if (!res.ok) {
@@ -72,18 +80,20 @@ export const logout = () => {
 
 export const loadEvents = async (): Promise<GameEvent[]> => {
   const res = await fetch(`${API_URL}/events`, {
-    headers: authHeaders()
+    headers: authHeaders(),
   });
 
   if (!res.ok) throw new Error('Error al cargar eventos');
   return res.json();
 };
 
-export const saveEvent = async (event: Omit<GameEvent, 'id'>): Promise<GameEvent> => {
+export const saveEvent = async (
+  event: Omit<GameEvent, 'id'>
+): Promise<GameEvent> => {
   const res = await fetch(`${API_URL}/events`, {
     method: 'POST',
     headers: authHeaders(),
-    body: JSON.stringify(event)
+    body: JSON.stringify(event),
   });
 
   if (!res.ok) {
@@ -94,11 +104,14 @@ export const saveEvent = async (event: Omit<GameEvent, 'id'>): Promise<GameEvent
   return res.json();
 };
 
-export const verifyEventPassword = async (eventId: string, password: string): Promise<GameEvent> => {
+export const verifyEventPassword = async (
+  eventId: string,
+  password: string
+): Promise<GameEvent> => {
   const res = await fetch(`${API_URL}/events/${eventId}/verify-password`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ password })
+    body: JSON.stringify({ password }),
   });
 
   if (!res.ok) {
@@ -114,18 +127,20 @@ export const verifyEventPassword = async (eventId: string, password: string): Pr
 
 export const loadTables = async (eventId: string): Promise<GameTable[]> => {
   const res = await fetch(`${API_URL}/tables/event/${eventId}`, {
-    headers: authHeaders()
+    headers: authHeaders(),
   });
 
   if (!res.ok) throw new Error('Error al cargar mesas');
   return res.json();
 };
 
-export const saveTable = async (table: Omit<GameTable, 'id' | 'hostId' | 'hostName' | 'registeredPlayers'>): Promise<GameTable> => {
+export const saveTable = async (
+  table: Omit<GameTable, 'id' | 'hostId' | 'hostName' | 'registeredPlayers'>
+): Promise<GameTable> => {
   const res = await fetch(`${API_URL}/tables`, {
     method: 'POST',
     headers: authHeaders(),
-    body: JSON.stringify(table)
+    body: JSON.stringify(table),
   });
 
   if (!res.ok) {
@@ -139,7 +154,7 @@ export const saveTable = async (table: Omit<GameTable, 'id' | 'hostId' | 'hostNa
 export const joinTable = async (tableId: string): Promise<GameTable> => {
   const res = await fetch(`${API_URL}/tables/${tableId}/join`, {
     method: 'POST',
-    headers: authHeaders()
+    headers: authHeaders(),
   });
 
   if (!res.ok) {
@@ -153,7 +168,7 @@ export const joinTable = async (tableId: string): Promise<GameTable> => {
 export const leaveTable = async (tableId: string): Promise<GameTable> => {
   const res = await fetch(`${API_URL}/tables/${tableId}/leave`, {
     method: 'POST',
-    headers: authHeaders()
+    headers: authHeaders(),
   });
 
   if (!res.ok) {
@@ -164,22 +179,36 @@ export const leaveTable = async (tableId: string): Promise<GameTable> => {
   return res.json();
 };
 
+export const deleteTable = async (tableId: string): Promise<void> => {
+  const res = await fetch(`${API_URL}/tables/${tableId}`, {
+    method: 'DELETE',
+    headers: authHeaders(),
+  });
+
+  if (!res.ok) {
+    const error = await res.json();
+    throw new Error(error.error || 'Error al eliminar mesa');
+  }
+};
+
 // ============ FREE GAMES ============
 
 export const loadFreeGames = async (eventId: string): Promise<FreeGame[]> => {
   const res = await fetch(`${API_URL}/games/event/${eventId}`, {
-    headers: authHeaders()
+    headers: authHeaders(),
   });
 
   if (!res.ok) throw new Error('Error al cargar juegos');
   return res.json();
 };
 
-export const saveFreeGame = async (game: Omit<FreeGame, 'id' | 'ownerId' | 'ownerName'>): Promise<FreeGame> => {
+export const saveFreeGame = async (
+  game: Omit<FreeGame, 'id' | 'ownerId' | 'ownerName'>
+): Promise<FreeGame> => {
   const res = await fetch(`${API_URL}/games`, {
     method: 'POST',
     headers: authHeaders(),
-    body: JSON.stringify(game)
+    body: JSON.stringify(game),
   });
 
   if (!res.ok) {
@@ -188,4 +217,16 @@ export const saveFreeGame = async (game: Omit<FreeGame, 'id' | 'ownerId' | 'owne
   }
 
   return res.json();
+};
+
+export const deleteFreeGame = async (gameId: string): Promise<void> => {
+  const res = await fetch(`${API_URL}/games/${gameId}`, {
+    method: 'DELETE',
+    headers: authHeaders(),
+  });
+
+  if (!res.ok) {
+    const error = await res.json();
+    throw new Error(error.error || 'Error al eliminar juego');
+  }
 };

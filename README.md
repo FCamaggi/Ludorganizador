@@ -6,50 +6,72 @@ Aplicación web completa para organizar eventos de juegos de mesa con autenticac
 
 - **Frontend**: React + TypeScript + Vite (desplegado en Netlify)
 - **Backend**: Node.js + Express (desplegado en Render)
+- **Base de datos**: MongoDB Atlas (persistencia en la nube)
 - **Autenticación**: JWT (JSON Web Tokens)
-- **Base de datos**: En memoria (para desarrollo, recomendado migrar a MongoDB/PostgreSQL en producción)
+- **ODM**: Mongoose para interacción con MongoDB
 
 ## 🚀 Desarrollo Local
 
 ### Prerrequisitos
+
 - Node.js 20+
 - npm
 
 ### Instalación
 
 1. **Instalar dependencias del frontend**:
+
    ```bash
    npm install
    ```
 
 2. **Instalar dependencias del backend**:
+
    ```bash
    npm run server:install
    ```
 
 3. **Configurar variables de entorno**:
-   
+
    **Backend** (`server/.env`):
+
    ```bash
    cp server/.env.example server/.env
    ```
+
    Edita `server/.env` y configura:
+
    - `JWT_SECRET`: Una clave secreta segura para JWT
    - `PORT`: Puerto del servidor (por defecto 3001)
+   - `MONGODB_URI`: URI de conexión a MongoDB (ver [MONGODB_SETUP.md](MONGODB_SETUP.md))
 
    **Frontend** (`.env.local`):
+
    ```bash
    cp .env.example .env.local
    ```
+
    Edita `.env.local`:
+
    - `VITE_API_URL`: URL de tu backend (desarrollo: http://localhost:3001/api)
+
+### Configurar MongoDB Atlas
+
+Sigue la guía completa en [MONGODB_SETUP.md](MONGODB_SETUP.md) para:
+
+- Crear una cuenta gratuita en MongoDB Atlas
+- Configurar tu cluster
+- Obtener la URI de conexión
+- Configurar seguridad
 
 ### Ejecutar en desarrollo
 
 1. **Iniciar el backend**:
+
    ```bash
    npm run server:dev
    ```
+
    El servidor estará en http://localhost:3001
 
 2. **Iniciar el frontend** (en otra terminal):
@@ -73,6 +95,7 @@ Aplicación web completa para organizar eventos de juegos de mesa con autenticac
    - `JWT_SECRET`: Genera una clave segura
    - `NODE_ENV`: production
    - `PORT`: 10000 (o el que asigne Render)
+   - `MONGODB_URI`: Tu URI de MongoDB Atlas (ver [MONGODB_SETUP.md](MONGODB_SETUP.md))
 
 ### Desplegar Frontend en Netlify
 
@@ -95,22 +118,26 @@ Aplicación web completa para organizar eventos de juegos de mesa con autenticac
 ## 📝 API Endpoints
 
 ### Autenticación
+
 - `POST /api/auth/register` - Registrar nuevo usuario
 - `POST /api/auth/login` - Iniciar sesión
 - `GET /api/auth/me` - Obtener usuario actual
 
 ### Eventos
+
 - `GET /api/events` - Listar eventos
 - `POST /api/events` - Crear evento (requiere auth)
 - `POST /api/events/:id/verify-password` - Verificar contraseña de evento
 
 ### Mesas
+
 - `GET /api/tables/event/:eventId` - Obtener mesas de un evento
 - `POST /api/tables` - Crear mesa (requiere auth)
 - `POST /api/tables/:id/join` - Unirse a mesa (requiere auth)
 - `POST /api/tables/:id/leave` - Salir de mesa (requiere auth)
 
 ### Juegos Libres
+
 - `GET /api/games/event/:eventId` - Obtener juegos de un evento
 - `POST /api/games` - Agregar juego (requiere auth)
 

@@ -11,6 +11,8 @@ import {
   LogOut,
   MessageSquare,
   Lock,
+  Shield,
+  Trash2,
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
@@ -18,6 +20,7 @@ import { es } from 'date-fns/locale';
 import Modal from './components/Modal';
 import Button from './components/Button';
 import AuthForm from './components/AuthForm';
+import AdminPanel from './components/AdminPanel';
 import { GameEvent, GameTable, FreeGame, AuthUser } from './types';
 import * as api from './services/apiService';
 
@@ -82,9 +85,12 @@ const GameTableCard: React.FC<{
   currentUser: AuthUser;
   onJoin: () => void;
   onLeave: () => void;
-}> = ({ table, currentUser, onJoin, onLeave }) => {
+  onDelete: () => void;
+}> = ({ table, currentUser, onJoin, onLeave, onDelete }) => {
   const isJoined = table.registeredPlayers.some((p) => p.id === currentUser.id);
   const isHost = table.hostId === currentUser.id;
+  const isAdmin = currentUser.role === 'admin';
+  const canDelete = isHost || isAdmin;
   const isFull = table.registeredPlayers.length >= table.maxPlayers;
   const spotsLeft = table.maxPlayers - table.registeredPlayers.length;
 
@@ -141,7 +147,7 @@ const GameTableCard: React.FC<{
           </div>
         </div>
 
-        <div className="mt-auto pt-2">
+        <div className="mt-auto pt-2 space-y-2">
           {isJoined ? (
             <Button
               variant="outline"
@@ -158,6 +164,16 @@ const GameTableCard: React.FC<{
               onClick={onJoin}
             >
               {isFull ? 'Completo' : 'Inscribirse'}
+            </Button>
+          )}
+          {canDelete && (
+            <Button
+              variant="outline"
+              className="w-full text-red-600 border-red-300 hover:bg-red-50"
+              onClick={onDelete}
+            >
+              <Trash2 size={16} />
+              <span className="ml-1">Eliminar Mesa</span>
             </Button>
           )}
         </div>
@@ -183,6 +199,7 @@ const App: React.FC = () => {
   const [isEventModalOpen, setIsEventModalOpen] = useState(false);
   const [isTableModalOpen, setIsTableModalOpen] = useState(false);
   const [isFreeGameModalOpen, setIsFreeGameModalOpen] = useState(false);
+  const [isAdminPanelOpen, setIsAdminPanelOpen] = useState(false);
 
   // Forms
   const [newEventTitle, setNewEventTitle] = useState('');
@@ -242,7 +259,7 @@ const App: React.FC = () => {
     try {
       const [tablesData, gamesData] = await Promise.all([
         api.loadTables(activeEventId),
-        api.loadFreeGames(activeEventId)
+        api.loadFreeGames(activeEventId),
       ]);
       setTables(tablesData);
       setFreeGames(gamesData);
@@ -336,6 +353,38 @@ const App: React.FC = () => {
     }
   };
 
+  const handleDeleteTable = async (table: GameTable) => {
+    if (!user) return;
+
+    if (!confirm(`¿Estás seguro de eliminar la mesa "${table.gameName}"?`)) {
+      return;
+    }
+
+    try {
+      await api.deleteTable(table.id);
+      await loadEventData();
+    } catch (error: any) {
+      console.error('Error deleting table:', error);
+      alert(error.message || 'Error al eliminar mesa');
+    }
+  };
+
+  const handleDeleteFreeGame = async (game: FreeGame) => {
+    if (!user) return;
+
+    if (!confirm(`¿Estás seguro de eliminar el juego "${game.gameName}"?`)) {
+      return;
+    }
+
+    try {
+      await api.deleteFreeGame(game.id);
+      await loadEventData();
+    } catch (error: any) {
+      console.error('Error deleting game:', error);
+      alert(error.message || 'Error al eliminar juego');
+    }
+  };
+
   const handleAddFreeGame = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!user || !activeEventId) return;
@@ -376,7 +425,10 @@ const App: React.FC = () => {
     if (!pendingEventId) return;
 
     try {
-      const event = await api.verifyEventPassword(pendingEventId, passwordInput);
+      const event = await api.verifyEventPassword(
+        pendingEventId,
+        passwordInput
+      );
       // Contraseña correcta
       setUnlockedEvents((prev) => new Set(prev).add(pendingEventId));
       setActiveEventId(pendingEventId);
@@ -387,7 +439,9 @@ const App: React.FC = () => {
       setPendingEventId(null);
     } catch (error: any) {
       // Contraseña incorrecta
-      setPasswordError(error.message || 'Contraseña incorrecta. Inténtalo de nuevo.');
+      setPasswordError(
+        error.message || 'Contraseña incorrecta. Inténtalo de nuevo.'
+      );
     }
   };
 
@@ -420,7 +474,7 @@ const App: React.FC = () => {
               <Dice6 size={24} />
             </div>
             <span className="font-bold text-xl tracking-tight text-gray-900">
-              Ludis
+              Ludorganizador
             </span>
           </div>
           <div className="flex items-center gap-4">
@@ -428,6 +482,15 @@ const App: React.FC = () => {
               <UserIcon size={16} />
               <span className="font-medium">{user.name}</span>
             </div>
+            {user.role === 'admin' && (
+              <button
+                onClick={() => setIsAdminPanelOpen(true)}
+                className="text-gray-400 hover:text-indigo-600 transition-colors"
+                title="Panel de Administración"
+              >
+                <Shield size={20} />
+              </button>
+            )}
             <button
               onClick={handleLogout}
               className="text-gray-400 hover:text-red-500 transition-colors"
@@ -437,7 +500,6 @@ const App: React.FC = () => {
           </div>
         </div>
       </header>
-
       <main className="max-w-5xl mx-auto px-4 py-8">
         {/* Events View */}
         {view === 'events' && (
@@ -488,6 +550,51 @@ const App: React.FC = () => {
             >
               &larr; Volver a Eventos
             </button>
+
+            {/* Event Details Card */}
+            {(() => {
+              const currentEvent = events.find((e) => e.id === activeEventId);
+              if (!currentEvent) return null;
+              return (
+                <div className="bg-gradient-to-r from-indigo-500 to-purple-600 rounded-xl shadow-lg p-6 mb-8 text-white">
+                  <div className="flex items-start justify-between">
+                    <div className="flex-1">
+                      <h1 className="text-3xl font-bold mb-2">
+                        {currentEvent.title}
+                      </h1>
+                      {currentEvent.description && (
+                        <p className="text-indigo-100 mb-4">
+                          {currentEvent.description}
+                        </p>
+                      )}
+                      <div className="space-y-2">
+                        <div className="flex items-center gap-2">
+                          <MapPin size={18} />
+                          <span>{currentEvent.location}</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <Calendar size={18} />
+                          <span>
+                            {format(
+                              new Date(currentEvent.date),
+                              "EEEE d 'de' MMMM, yyyy - HH:mm",
+                              {
+                                locale: es,
+                              }
+                            )}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                    {currentEvent.password && (
+                      <div className="bg-white/20 backdrop-blur-sm rounded-lg px-3 py-2">
+                        <Lock size={20} />
+                      </div>
+                    )}
+                  </div>
+                </div>
+              );
+            })()}
 
             {/* Tabs */}
             <div className="flex border-b border-gray-200 mb-8">
@@ -540,6 +647,7 @@ const App: React.FC = () => {
                       currentUser={user}
                       onJoin={() => handleJoinTable(table)}
                       onLeave={() => handleLeaveTable(table)}
+                      onDelete={() => handleDeleteTable(table)}
                     />
                   ))}
                   {tables.length === 0 && (
@@ -550,15 +658,9 @@ const App: React.FC = () => {
                       <h3 className="text-lg font-medium text-gray-900">
                         No hay mesas creadas
                       </h3>
-                      <p className="text-gray-500 mt-1 mb-4">
+                      <p className="text-gray-500 mt-1">
                         ¡Sé el primero en proponer un juego!
                       </p>
-                      <Button
-                        variant="outline"
-                        onClick={() => setIsTableModalOpen(true)}
-                      >
-                        Crear Mesa
-                      </Button>
                     </div>
                   )}
                 </div>
@@ -588,35 +690,47 @@ const App: React.FC = () => {
                 </div>
 
                 <div className="bg-white rounded-xl shadow-sm border border-gray-200 divide-y divide-gray-100">
-                  {freeGames.map((game) => (
-                    <div
-                      key={game.id}
-                      className="p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4"
-                    >
-                      <div className="flex items-start gap-3">
-                        <div className="bg-teal-50 text-teal-600 p-2 rounded-lg mt-1 sm:mt-0">
-                          <Dice6 size={20} />
-                        </div>
-                        <div>
-                          <h4 className="font-bold text-gray-800">
-                            {game.gameName}
-                          </h4>
-                          <p className="text-sm text-gray-500">
-                            Traído por{' '}
-                            <span className="text-indigo-600 font-medium">
-                              {game.ownerName}
-                            </span>
-                          </p>
-                          {game.note && (
-                            <p className="text-xs text-gray-400 mt-1 italic">
-                              "{game.note}"
+                  {freeGames.map((game) => {
+                    const canDelete =
+                      user.id === game.ownerId || user.role === 'admin';
+                    return (
+                      <div
+                        key={game.id}
+                        className="p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4"
+                      >
+                        <div className="flex items-start gap-3">
+                          <div className="bg-teal-50 text-teal-600 p-2 rounded-lg mt-1 sm:mt-0">
+                            <Dice6 size={20} />
+                          </div>
+                          <div>
+                            <h4 className="font-bold text-gray-800">
+                              {game.gameName}
+                            </h4>
+                            <p className="text-sm text-gray-500">
+                              Traído por{' '}
+                              <span className="text-indigo-600 font-medium">
+                                {game.ownerName}
+                              </span>
                             </p>
-                          )}
+                            {game.note && (
+                              <p className="text-xs text-gray-400 mt-1 italic">
+                                "{game.note}"
+                              </p>
+                            )}
+                          </div>
                         </div>
+                        {canDelete && (
+                          <button
+                            onClick={() => handleDeleteFreeGame(game)}
+                            className="text-red-600 hover:text-red-800 transition-colors p-2"
+                            title="Eliminar juego"
+                          >
+                            <Trash2 size={20} />
+                          </button>
+                        )}
                       </div>
-                      {/* Could add action to "claim" or "request" later */}
-                    </div>
-                  ))}
+                    );
+                  })}
                   {freeGames.length === 0 && (
                     <div className="p-12 text-center text-gray-500">
                       Nadie ha registrado juegos libres aún.
@@ -628,9 +742,7 @@ const App: React.FC = () => {
           </div>
         )}
       </main>
-
       {/* --- Modals --- */}
-
       {/* Create Event Modal */}
       <Modal
         isOpen={isEventModalOpen}
@@ -645,6 +757,7 @@ const App: React.FC = () => {
             <input
               required
               type="text"
+              autoComplete="off"
               className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none"
               value={newEventTitle}
               onChange={(e) => setNewEventTitle(e.target.value)}
@@ -658,10 +771,11 @@ const App: React.FC = () => {
             <input
               required
               type="text"
+              autoComplete="off"
               className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none"
               value={newEventLocation}
               onChange={(e) => setNewEventLocation(e.target.value)}
-              placeholder="Ej. Casa de Juan, Club de Rol..."
+              placeholder="Ej. Providencia, Santiago / Casa de Juan..."
             />
           </div>
           <div>
@@ -684,10 +798,11 @@ const App: React.FC = () => {
               <Lock size={16} className="text-gray-400" />
               <input
                 type="password"
+                autoComplete="new-password"
                 className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none"
                 value={newEventPassword}
                 onChange={(e) => setNewEventPassword(e.target.value)}
-                placeholder="Deja en blanco para evento público"
+                placeholder="Opcional - solo para eventos privados"
               />
             </div>
             <p className="text-xs text-gray-500 mt-1">
@@ -707,7 +822,6 @@ const App: React.FC = () => {
           </div>
         </form>
       </Modal>
-
       {/* Create Table Modal */}
       <Modal
         isOpen={isTableModalOpen}
@@ -784,7 +898,6 @@ const App: React.FC = () => {
           </div>
         </form>
       </Modal>
-
       {/* Password Verification Modal */}
       <Modal
         isOpen={isPasswordModalOpen}
@@ -832,7 +945,6 @@ const App: React.FC = () => {
           </div>
         </form>
       </Modal>
-
       {/* Add Free Game Modal */}
       <Modal
         isOpen={isFreeGameModalOpen}
@@ -879,6 +991,13 @@ const App: React.FC = () => {
           </div>
         </form>
       </Modal>
+      {/* Admin Panel */}
+      {isAdminPanelOpen && user && (
+        <AdminPanel
+          currentUser={user}
+          onClose={() => setIsAdminPanelOpen(false)}
+        />
+      )}{' '}
     </div>
   );
 };

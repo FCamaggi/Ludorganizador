@@ -50,7 +50,9 @@ const AuthForm: React.FC<AuthFormProps> = ({ onComplete }) => {
             {isLogin ? 'Iniciar Sesión' : 'Crear Cuenta'}
           </h1>
           <p className="text-gray-500 mt-2">
-            {isLogin ? 'Accede a Ludorganizador' : 'Únete a la comunidad de jugadores'}
+            {isLogin
+              ? 'Accede a Ludorganizador'
+              : 'Únete a la comunidad de jugadores'}
           </p>
         </div>
 
@@ -67,12 +69,16 @@ const AuthForm: React.FC<AuthFormProps> = ({ onComplete }) => {
                 Nombre / Nickname
               </label>
               <div className="relative">
-                <UserIcon size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+                <UserIcon
+                  size={18}
+                  className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
+                />
                 <input
                   type="text"
                   required
+                  autoComplete="name"
                   className="w-full pl-10 pr-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all"
-                  placeholder="Ej. Alex Meeple"
+                  placeholder="Tu nombre o apodo"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                 />
@@ -85,10 +91,14 @@ const AuthForm: React.FC<AuthFormProps> = ({ onComplete }) => {
               Email
             </label>
             <div className="relative">
-              <Mail size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+              <Mail
+                size={18}
+                className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
+              />
               <input
                 type="email"
                 required
+                autoComplete="email"
                 className="w-full pl-10 pr-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all"
                 placeholder="tu@email.com"
                 value={email}
@@ -102,11 +112,15 @@ const AuthForm: React.FC<AuthFormProps> = ({ onComplete }) => {
               Contraseña
             </label>
             <div className="relative">
-              <Lock size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+              <Lock
+                size={18}
+                className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
+              />
               <input
                 type="password"
                 required
                 minLength={6}
+                autoComplete={isLogin ? 'current-password' : 'new-password'}
                 className="w-full pl-10 pr-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all"
                 placeholder={isLogin ? 'Tu contraseña' : 'Mínimo 6 caracteres'}
                 value={password}
@@ -115,8 +129,16 @@ const AuthForm: React.FC<AuthFormProps> = ({ onComplete }) => {
             </div>
           </div>
 
-          <Button type="submit" className="w-full py-3 text-lg" disabled={loading}>
-            {loading ? 'Procesando...' : (isLogin ? 'Iniciar Sesión' : 'Crear Cuenta')}
+          <Button
+            type="submit"
+            className="w-full py-3 text-lg"
+            disabled={loading}
+          >
+            {loading
+              ? 'Procesando...'
+              : isLogin
+              ? 'Iniciar Sesión'
+              : 'Crear Cuenta'}
           </Button>
         </form>
 
@@ -129,7 +151,9 @@ const AuthForm: React.FC<AuthFormProps> = ({ onComplete }) => {
             }}
             className="text-indigo-600 hover:text-indigo-800 text-sm font-medium"
           >
-            {isLogin ? '¿No tienes cuenta? Regístrate' : '¿Ya tienes cuenta? Inicia sesión'}
+            {isLogin
+              ? '¿No tienes cuenta? Regístrate'
+              : '¿Ya tienes cuenta? Inicia sesión'}
           </button>
         </div>
       </div>

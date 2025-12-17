@@ -1,7 +1,7 @@
 import express from 'express';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
-import { db } from '../index.js';
+import User from '../models/User.js';
 
 const router = express.Router();
 
@@ -20,7 +20,7 @@ router.post('/register', async (req, res) => {
     }
 
     // Verificar si el email ya existe
-    const existingUser = db.users.find(u => u.email === email);
+    const existingUser = await User.findOne({ email });
     if (existingUser) {
       return res.status(400).json({ error: 'El email ya está registrado' });
     }
@@ -29,19 +29,15 @@ router.post('/register', async (req, res) => {
     const hashedPassword = await bcrypt.hash(password, 10);
 
     // Crear usuario
-    const user = {
-      id: `user-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+    const user = await User.create({
       name,
       email,
-      password: hashedPassword,
-      createdAt: new Date().toISOString()
-    };
-
-    db.users.push(user);
+      password: hashedPassword
+    });
 
     // Generar token
     const token = jwt.sign(
-      { id: user.id, email: user.email, name: user.name },
+      { id: user._id, email: user.email, name: user.name, role: user.role },
       process.env.JWT_SECRET,
       { expiresIn: '7d' }
     );
@@ -50,9 +46,10 @@ router.post('/register', async (req, res) => {
       message: 'Usuario registrado exitosamente',
       token,
       user: {
-        id: user.id,
+        id: user._id,
         name: user.name,
-        email: user.email
+        email: user.email,
+        role: user.role
       }
     });
   } catch (error) {
@@ -71,7 +68,7 @@ router.post('/login', async (req, res) => {
     }
 
     // Buscar usuario
-    const user = db.users.find(u => u.email === email);
+    const user = await User.findOne({ email });
     if (!user) {
       return res.status(401).json({ error: 'Credenciales inválidas' });
     }
@@ -84,7 +81,7 @@ router.post('/login', async (req, res) => {
 
     // Generar token
     const token = jwt.sign(
-      { id: user.id, email: user.email, name: user.name },
+      { id: user._id, email: user.email, name: user.name, role: user.role },
       process.env.JWT_SECRET,
       { expiresIn: '7d' }
     );
@@ -93,9 +90,10 @@ router.post('/login', async (req, res) => {
       message: 'Login exitoso',
       token,
       user: {
-        id: user.id,
+        id: user._id,
         name: user.name,
-        email: user.email
+        email: user.email,
+        role: user.role
       }
     });
   } catch (error) {
@@ -105,7 +103,7 @@ router.post('/login', async (req, res) => {
 });
 
 // Verificar token y obtener usuario
-router.get('/me', (req, res) => {
+router.get('/me', async (req, res) => {
   const authHeader = req.headers['authorization'];
   const token = authHeader && authHeader.split(' ')[1];
 
@@ -115,16 +113,17 @@ router.get('/me', (req, res) => {
 
   try {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    const user = db.users.find(u => u.id === decoded.id);
-    
+    const user = await User.findById(decoded.id).select('-password');
+
     if (!user) {
       return res.status(404).json({ error: 'Usuario no encontrado' });
     }
 
     res.json({
-      id: user.id,
+      id: user._id,
       name: user.name,
-      email: user.email
+      email: user.email,
+      role: user.role
     });
   } catch (error) {
     res.status(403).json({ error: 'Token inválido' });

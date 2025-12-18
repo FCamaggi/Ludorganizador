@@ -1,5 +1,14 @@
 import React, { useState } from 'react';
-import { Calendar, MapPin, Lock, Copy, Map, X, Check, RotateCcw } from 'lucide-react';
+import {
+  Calendar,
+  MapPin,
+  Lock,
+  Copy,
+  Map,
+  X,
+  Check,
+  RotateCcw,
+} from 'lucide-react';
 import Button from '../ui/Button';
 import { CreateEventData, GameEvent } from '../../types';
 import { isValidTitle, isValidDescription } from '../../utils/validators';
@@ -24,7 +33,7 @@ export const EventForm: React.FC<EventFormProps> = ({
   const [password, setPassword] = useState('');
   const [selectedTemplate, setSelectedTemplate] = useState('');
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
-  
+
   // Map preview states
   const [showMapPreview, setShowMapPreview] = useState(false);
   const [mapConfirmed, setMapConfirmed] = useState(false);
@@ -246,7 +255,9 @@ export const EventForm: React.FC<EventFormProps> = ({
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-xl shadow-2xl max-w-3xl w-full max-h-[90vh] overflow-hidden">
             <div className="p-4 border-b border-gray-200 flex justify-between items-center">
-              <h3 className="text-lg font-bold text-gray-900">Vista Previa del Mapa</h3>
+              <h3 className="text-lg font-bold text-gray-900">
+                Vista Previa del Mapa
+              </h3>
               <button
                 onClick={() => setShowMapPreview(false)}
                 className="p-1 hover:bg-gray-100 rounded transition-colors"
@@ -254,11 +265,12 @@ export const EventForm: React.FC<EventFormProps> = ({
                 <X size={20} />
               </button>
             </div>
-            
+
             <div className="p-4">
               <div className="mb-4">
                 <p className="text-sm text-gray-600 mb-2">
-                  Ubicación: <span className="font-medium text-gray-900">{location}</span>
+                  Ubicación:{' '}
+                  <span className="font-medium text-gray-900">{location}</span>
                 </p>
                 <p className="text-xs text-gray-500">
                   ¿El mapa muestra la ubicación correcta?
@@ -309,7 +321,9 @@ export const EventForm: React.FC<EventFormProps> = ({
               </div>
 
               <p className="text-xs text-gray-500 mt-4 text-center">
-                Si el mapa no muestra la ubicación correcta, puedes cambiar la descripción de la ubicación o elegir no mostrar el mapa para evitar confusiones.
+                Si el mapa no muestra la ubicación correcta, puedes cambiar la
+                descripción de la ubicación o elegir no mostrar el mapa para
+                evitar confusiones.
               </p>
             </div>
           </div>

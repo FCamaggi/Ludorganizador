@@ -16,11 +16,11 @@ interface GameEntry {
   note: string;
 }
 
-export const FreeGameForm: React.FC<FreeGameFormProps> = ({ 
-  eventId, 
-  onSubmit, 
-  onCancel, 
-  isLoading = false 
+export const FreeGameForm: React.FC<FreeGameFormProps> = ({
+  eventId,
+  onSubmit,
+  onCancel,
+  isLoading = false,
 }) => {
   const [games, setGames] = useState<GameEntry[]>([{ name: '', note: '' }]);
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
@@ -29,8 +29,8 @@ export const FreeGameForm: React.FC<FreeGameFormProps> = ({
     const newErrors: { [key: string]: string } = {};
 
     // Validar que haya al menos un juego con nombre
-    const validGames = games.filter(g => g.name.trim().length > 0);
-    
+    const validGames = games.filter((g) => g.name.trim().length > 0);
+
     if (validGames.length === 0) {
       newErrors.games = 'Debes agregar al menos un juego';
     }
@@ -38,7 +38,8 @@ export const FreeGameForm: React.FC<FreeGameFormProps> = ({
     // Validar cada juego con nombre
     games.forEach((game, index) => {
       if (game.name.trim().length > 0 && !isValidTitle(game.name)) {
-        newErrors[`game_${index}`] = 'El nombre debe tener al menos 3 caracteres';
+        newErrors[`game_${index}`] =
+          'El nombre debe tener al menos 3 caracteres';
       }
     });
 
@@ -55,10 +56,10 @@ export const FreeGameForm: React.FC<FreeGameFormProps> = ({
 
     // Filtrar solo juegos con nombre
     const validGames = games
-      .filter(g => g.name.trim().length > 0)
-      .map(g => ({
+      .filter((g) => g.name.trim().length > 0)
+      .map((g) => ({
         name: g.name.trim(),
-        note: g.note.trim()
+        note: g.note.trim(),
       }));
 
     const gameData: CreateFreeGameData = {
@@ -106,7 +107,10 @@ export const FreeGameForm: React.FC<FreeGameFormProps> = ({
         {errors.games && <p className="text-red-500 text-sm">{errors.games}</p>}
 
         {games.map((game, index) => (
-          <div key={index} className="p-3 bg-gray-50 rounded-lg border border-gray-200">
+          <div
+            key={index}
+            className="p-3 bg-gray-50 rounded-lg border border-gray-200"
+          >
             <div className="flex items-start gap-2 mb-2">
               <div className="flex-1">
                 <input
@@ -114,12 +118,16 @@ export const FreeGameForm: React.FC<FreeGameFormProps> = ({
                   value={game.name}
                   onChange={(e) => updateGame(index, 'name', e.target.value)}
                   className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent ${
-                    errors[`game_${index}`] ? 'border-red-500' : 'border-gray-300'
+                    errors[`game_${index}`]
+                      ? 'border-red-500'
+                      : 'border-gray-300'
                   }`}
                   placeholder={`Nombre del juego ${index + 1}`}
                 />
                 {errors[`game_${index}`] && (
-                  <p className="text-red-500 text-xs mt-1">{errors[`game_${index}`]}</p>
+                  <p className="text-red-500 text-xs mt-1">
+                    {errors[`game_${index}`]}
+                  </p>
                 )}
               </div>
               {games.length > 1 && (
@@ -145,10 +153,22 @@ export const FreeGameForm: React.FC<FreeGameFormProps> = ({
       </div>
 
       <div className="flex gap-3 pt-4 border-t">
-        <Button type="submit" variant="primary" className="flex-1" disabled={isLoading}>
-          {isLoading ? 'Guardando...' : `Agregar ${games.filter(g => g.name.trim()).length} juego(s)`}
+        <Button
+          type="submit"
+          variant="primary"
+          className="flex-1"
+          disabled={isLoading}
+        >
+          {isLoading
+            ? 'Guardando...'
+            : `Agregar ${games.filter((g) => g.name.trim()).length} juego(s)`}
         </Button>
-        <Button type="button" variant="outline" onClick={onCancel} disabled={isLoading}>
+        <Button
+          type="button"
+          variant="outline"
+          onClick={onCancel}
+          disabled={isLoading}
+        >
           Cancelar
         </Button>
       </div>

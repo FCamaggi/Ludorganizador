@@ -62,7 +62,9 @@ const EventCard: React.FC<EventCardProps> = ({ event, onClick }) => {
           </div>
           {event.creatorName && (
             <div className="flex items-center gap-2 pt-2 border-t border-gray-100">
-              <span className="text-xs text-gray-500">Creador: {event.creatorName}</span>
+              <span className="text-xs text-gray-500">
+                Creador: {event.creatorName}
+              </span>
               {event.creatorRole === 'admin' && (
                 <span className="text-xs px-1.5 py-0.5 rounded bg-indigo-100 text-indigo-800 flex items-center gap-1">
                   <Award size={10} />
@@ -72,7 +74,10 @@ const EventCard: React.FC<EventCardProps> = ({ event, onClick }) => {
               {event.creatorBadges && event.creatorBadges.length > 0 && (
                 <div className="flex gap-1">
                   {event.creatorBadges.map((badge) => {
-                    const config = badgeConfig[badge] || { label: badge, color: 'bg-gray-100 text-gray-800' };
+                    const config = badgeConfig[badge] || {
+                      label: badge,
+                      color: 'bg-gray-100 text-gray-800',
+                    };
                     return (
                       <span
                         key={badge}

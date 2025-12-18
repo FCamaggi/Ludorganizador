@@ -35,7 +35,11 @@ interface ArchivedEvent {
   archivedAt: string;
 }
 
-const AdminPanel: React.FC<AdminPanelProps> = ({ onClose, onEventChange, showToast }) => {
+const AdminPanel: React.FC<AdminPanelProps> = ({
+  onClose,
+  onEventChange,
+  showToast,
+}) => {
   const [activeTab, setActiveTab] = useState<
     'users' | 'events' | 'archived' | 'stats'
   >('stats');
@@ -44,7 +48,9 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ onClose, onEventChange, showToa
   const [events, setEvents] = useState<any[]>([]);
   const [archivedEvents, setArchivedEvents] = useState<ArchivedEvent[]>([]);
   const [userBeingEdited, setUserBeingEdited] = useState<string | null>(null);
-  const [editingBadges, setEditingBadges] = useState<{[key: string]: string[]}>({});
+  const [editingBadges, setEditingBadges] = useState<{
+    [key: string]: string[];
+  }>({});
   const [loading, setLoading] = useState(false);
   const [deleteModal, setDeleteModal] = useState<{
     type: string;
@@ -110,7 +116,10 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ onClose, onEventChange, showToa
       } else {
         const error = await res.json();
         console.error('Error al cargar usuarios:', error);
-        showToast(`Error: ${error.error || 'No se pudieron cargar los usuarios'}`, 'error');
+        showToast(
+          `Error: ${error.error || 'No se pudieron cargar los usuarios'}`,
+          'error'
+        );
       }
     } catch (error) {
       console.error('Error loading users:', error);
@@ -131,7 +140,10 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ onClose, onEventChange, showToa
       } else {
         const error = await res.json();
         console.error('Error al cargar eventos:', error);
-        showToast(`Error: ${error.error || 'No se pudieron cargar los eventos'}`, 'error');
+        showToast(
+          `Error: ${error.error || 'No se pudieron cargar los eventos'}`,
+          'error'
+        );
       }
     } catch (error) {
       console.error('Error loading events:', error);
@@ -232,19 +244,27 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ onClose, onEventChange, showToa
 
   const handleToggleRole = async (userId: string, currentRole: string) => {
     const newRole = currentRole === 'admin' ? 'user' : 'admin';
-    
+
     try {
-      const res = await fetch(`${API_CONFIG.BASE_URL}/admin/users/${userId}/role`, {
-        method: 'PATCH',
-        headers: authHeaders(),
-        body: JSON.stringify({ role: newRole }),
-      });
+      const res = await fetch(
+        `${API_CONFIG.BASE_URL}/admin/users/${userId}/role`,
+        {
+          method: 'PATCH',
+          headers: authHeaders(),
+          body: JSON.stringify({ role: newRole }),
+        }
+      );
 
       if (res.ok) {
         setUsers((prev) =>
           prev.map((u) => (u.id === userId ? { ...u, role: newRole } : u))
         );
-        showToast(`Usuario ${newRole === 'admin' ? 'promovido a' : 'removido de'} administrador`, 'success');
+        showToast(
+          `Usuario ${
+            newRole === 'admin' ? 'promovido a' : 'removido de'
+          } administrador`,
+          'success'
+        );
       } else {
         const error = await res.json();
         showToast(error.error || 'Error al cambiar rol', 'error');
@@ -257,11 +277,14 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ onClose, onEventChange, showToa
 
   const handleUpdateBadges = async (userId: string, badges: string[]) => {
     try {
-      const res = await fetch(`${API_CONFIG.BASE_URL}/admin/users/${userId}/badges`, {
-        method: 'PATCH',
-        headers: authHeaders(),
-        body: JSON.stringify({ badges }),
-      });
+      const res = await fetch(
+        `${API_CONFIG.BASE_URL}/admin/users/${userId}/badges`,
+        {
+          method: 'PATCH',
+          headers: authHeaders(),
+          body: JSON.stringify({ badges }),
+        }
+      );
 
       if (res.ok) {
         setUsers((prev) =>
@@ -285,15 +308,27 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ onClose, onEventChange, showToa
     const newBadges = currentBadges.includes(badge)
       ? currentBadges.filter((b) => b !== badge)
       : [...currentBadges, badge];
-    
+
     setEditingBadges({ ...editingBadges, [userId]: newBadges });
   };
 
   const badgeOptions = [
-    { value: 'veterano', label: 'Veterano', color: 'bg-purple-100 text-purple-800' },
+    {
+      value: 'veterano',
+      label: 'Veterano',
+      color: 'bg-purple-100 text-purple-800',
+    },
     { value: 'vip', label: 'VIP', color: 'bg-yellow-100 text-yellow-800' },
-    { value: 'organizador', label: 'Organizador', color: 'bg-blue-100 text-blue-800' },
-    { value: 'fundador', label: 'Fundador', color: 'bg-green-100 text-green-800' },
+    {
+      value: 'organizador',
+      label: 'Organizador',
+      color: 'bg-blue-100 text-blue-800',
+    },
+    {
+      value: 'fundador',
+      label: 'Fundador',
+      color: 'bg-green-100 text-green-800',
+    },
   ];
 
   return (
@@ -403,16 +438,21 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ onClose, onEventChange, showToa
                       )}
                     </div>
                     <p className="text-sm text-gray-500 mb-2">{user.email}</p>
-                    
+
                     {/* Badges Display */}
                     {user.badges && user.badges.length > 0 && (
                       <div className="flex flex-wrap gap-1 mb-2">
                         {user.badges.map((badge: string) => {
-                          const badgeConfig = badgeOptions.find(b => b.value === badge);
+                          const badgeConfig = badgeOptions.find(
+                            (b) => b.value === badge
+                          );
                           return (
                             <span
                               key={badge}
-                              className={`text-xs px-2 py-1 rounded flex items-center gap-1 ${badgeConfig?.color || 'bg-gray-100 text-gray-800'}`}
+                              className={`text-xs px-2 py-1 rounded flex items-center gap-1 ${
+                                badgeConfig?.color ||
+                                'bg-gray-100 text-gray-800'
+                              }`}
                             >
                               <Award size={12} />
                               {badgeConfig?.label || badge}
@@ -425,14 +465,22 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ onClose, onEventChange, showToa
                     {/* Edit Badges Mode */}
                     {userBeingEdited === user.id && (
                       <div className="mt-2 p-2 bg-white rounded border">
-                        <p className="text-xs font-medium mb-2">Asignar badges:</p>
+                        <p className="text-xs font-medium mb-2">
+                          Asignar badges:
+                        </p>
                         <div className="flex flex-wrap gap-2 mb-2">
                           {badgeOptions.map((badge) => {
-                            const isSelected = (editingBadges[user.id] || user.badges || []).includes(badge.value);
+                            const isSelected = (
+                              editingBadges[user.id] ||
+                              user.badges ||
+                              []
+                            ).includes(badge.value);
                             return (
                               <button
                                 key={badge.value}
-                                onClick={() => toggleBadge(user.id, badge.value)}
+                                onClick={() =>
+                                  toggleBadge(user.id, badge.value)
+                                }
                                 className={`text-xs px-2 py-1 rounded transition-all ${
                                   isSelected
                                     ? badge.color
@@ -446,7 +494,12 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ onClose, onEventChange, showToa
                         </div>
                         <div className="flex gap-2">
                           <button
-                            onClick={() => handleUpdateBadges(user.id, editingBadges[user.id] || user.badges || [])}
+                            onClick={() =>
+                              handleUpdateBadges(
+                                user.id,
+                                editingBadges[user.id] || user.badges || []
+                              )
+                            }
                             className="text-xs bg-green-600 text-white px-3 py-1 rounded hover:bg-green-700"
                           >
                             Guardar
@@ -474,7 +527,11 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ onClose, onEventChange, showToa
                             ? 'bg-indigo-100 text-indigo-600 hover:bg-indigo-200'
                             : 'bg-gray-200 text-gray-600 hover:bg-gray-300'
                         }`}
-                        title={user.role === 'admin' ? 'Remover admin' : 'Hacer admin'}
+                        title={
+                          user.role === 'admin'
+                            ? 'Remover admin'
+                            : 'Hacer admin'
+                        }
                       >
                         <Shield size={18} />
                       </button>

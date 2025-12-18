@@ -216,8 +216,7 @@ export const EventDetailView: React.FC<EventDetailViewProps> = ({
 
           <div className="grid grid-cols-1 gap-4">
             {freeGames.map((gameList) => {
-              const canEdit =
-                gameList.ownerId === currentUser.id || isAdmin;
+              const canEdit = gameList.ownerId === currentUser.id || isAdmin;
 
               return (
                 <div
@@ -236,28 +235,47 @@ export const EventDetailView: React.FC<EventDetailViewProps> = ({
                           Admin
                         </span>
                       )}
-                      {gameList.ownerBadges && gameList.ownerBadges.length > 0 && (
-                        <div className="flex gap-1">
-                          {gameList.ownerBadges.map((badge) => {
-                            const badgeConfig: Record<string, { label: string; color: string }> = {
-                              veterano: { label: 'Veterano', color: 'bg-purple-100 text-purple-800' },
-                              vip: { label: 'VIP', color: 'bg-yellow-100 text-yellow-800' },
-                              organizador: { label: 'Organizador', color: 'bg-blue-100 text-blue-800' },
-                              fundador: { label: 'Fundador', color: 'bg-green-100 text-green-800' },
-                            };
-                            const config = badgeConfig[badge] || { label: badge, color: 'bg-gray-100 text-gray-800' };
-                            return (
-                              <span
-                                key={badge}
-                                className={`text-xs px-2 py-0.5 rounded flex items-center gap-1 ${config.color}`}
-                              >
-                                <Award size={12} />
-                                {config.label}
-                              </span>
-                            );
-                          })}
-                        </div>
-                      )}
+                      {gameList.ownerBadges &&
+                        gameList.ownerBadges.length > 0 && (
+                          <div className="flex gap-1">
+                            {gameList.ownerBadges.map((badge) => {
+                              const badgeConfig: Record<
+                                string,
+                                { label: string; color: string }
+                              > = {
+                                veterano: {
+                                  label: 'Veterano',
+                                  color: 'bg-purple-100 text-purple-800',
+                                },
+                                vip: {
+                                  label: 'VIP',
+                                  color: 'bg-yellow-100 text-yellow-800',
+                                },
+                                organizador: {
+                                  label: 'Organizador',
+                                  color: 'bg-blue-100 text-blue-800',
+                                },
+                                fundador: {
+                                  label: 'Fundador',
+                                  color: 'bg-green-100 text-green-800',
+                                },
+                              };
+                              const config = badgeConfig[badge] || {
+                                label: badge,
+                                color: 'bg-gray-100 text-gray-800',
+                              };
+                              return (
+                                <span
+                                  key={badge}
+                                  className={`text-xs px-2 py-0.5 rounded flex items-center gap-1 ${config.color}`}
+                                >
+                                  <Award size={12} />
+                                  {config.label}
+                                </span>
+                              );
+                            })}
+                          </div>
+                        )}
                     </div>
                     {canEdit && (
                       <button
@@ -287,7 +305,9 @@ export const EventDetailView: React.FC<EventDetailViewProps> = ({
                   </div>
 
                   <p className="text-xs text-gray-400 mt-3">
-                    {gameList.games.length} juego{gameList.games.length !== 1 ? 's' : ''} disponible{gameList.games.length !== 1 ? 's' : ''}
+                    {gameList.games.length} juego
+                    {gameList.games.length !== 1 ? 's' : ''} disponible
+                    {gameList.games.length !== 1 ? 's' : ''}
                   </p>
                 </div>
               );

@@ -60,7 +60,10 @@ const GameTableCard: React.FC<GameTableCardProps> = ({
           {table.hostBadges && table.hostBadges.length > 0 && (
             <div className="flex gap-1">
               {table.hostBadges.map((badge) => {
-                const config = badgeConfig[badge] || { label: badge, color: 'bg-white/30 text-white' };
+                const config = badgeConfig[badge] || {
+                  label: badge,
+                  color: 'bg-white/30 text-white',
+                };
                 return (
                   <span
                     key={badge}

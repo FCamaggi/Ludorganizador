@@ -130,7 +130,10 @@ const App: React.FC = () => {
     }
   };
 
-  const showToast = (message: string, type: 'success' | 'error' | 'info' = 'info') => {
+  const showToast = (
+    message: string,
+    type: 'success' | 'error' | 'info' = 'info'
+  ) => {
     setToast({ show: true, message, type });
   };
 
@@ -489,7 +492,7 @@ const App: React.FC = () => {
           title="Panel de Administración"
           size="lg"
         >
-          <AdminPanel 
+          <AdminPanel
             onClose={() => setIsAdminPanelOpen(false)}
             onEventChange={() => {
               loadEvents();

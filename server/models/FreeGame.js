@@ -24,7 +24,7 @@ const freeGameSchema = new mongoose.Schema({
     ],
     required: true,
     validate: {
-      validator: function(v) {
+      validator: function (v) {
         return v && v.length > 0;
       },
       message: 'Debe haber al menos un juego en la lista'

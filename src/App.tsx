@@ -5,10 +5,12 @@ import { useAuth } from './hooks/useAuth';
 import { useEvents } from './hooks/useEvents';
 import { useTables } from './hooks/useTables';
 import { useFreeGames } from './hooks/useFreeGames';
+import { useLoadingWithDelay } from './hooks/useLoadingWithDelay';
 import AuthForm from './components/auth/AuthForm';
 import AdminPanel from './components/admin/AdminPanel';
 import Modal from './components/ui/Modal';
 import Toast from './components/ui/Toast';
+import LoadingMessage from './components/ui/LoadingMessage';
 import ConfirmDialog from './components/ui/ConfirmDialog';
 import { EventsView, EventDetailView } from './components/views';
 import {
@@ -60,6 +62,10 @@ const App: React.FC = () => {
     deleteFreeGame,
     loadFreeGames,
   } = useFreeGames(activeEventId);
+
+  // Detect prolonged loading (for Render cold starts)
+  const isLoading = eventsLoading || tablesLoading || gamesLoading;
+  const showDelayedMessage = useLoadingWithDelay(isLoading, 3000);
 
   // Modal States
   const [isEventModalOpen, setIsEventModalOpen] = useState(false);
@@ -510,6 +516,8 @@ const App: React.FC = () => {
           onClose={() => setToast({ ...toast, show: false })}
         />
       )}
+
+      <LoadingMessage isLoading={showDelayedMessage} />
     </div>
   );
 };

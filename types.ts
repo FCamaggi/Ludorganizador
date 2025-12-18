@@ -3,6 +3,7 @@ export interface User {
   name: string;
   email: string;
   role?: 'user' | 'admin';
+  badges?: string[];
 }
 
 export interface AuthUser extends User {
@@ -16,6 +17,11 @@ export interface GameEvent {
   date: string; // ISO String
   description: string;
   password?: string; // Optional password for private events
+  creatorId?: string;
+  creatorName?: string;
+  creatorBadges?: string[];
+  creatorRole?: 'user' | 'admin';
+  showMap?: boolean;
 }
 
 export interface GameTable {
@@ -23,6 +29,8 @@ export interface GameTable {
   eventId: string;
   hostName: string;
   hostId: string;
+  hostBadges?: string[];
+  hostRole?: 'user' | 'admin';
   gameName: string;
   description: string;
   imageUrl?: string;
@@ -36,6 +44,10 @@ export interface FreeGame {
   eventId: string;
   ownerName: string;
   ownerId: string;
-  gameName: string;
-  note?: string;
+  ownerBadges?: string[];
+  ownerRole?: 'user' | 'admin';
+  games: {
+    name: string;
+    note?: string;
+  }[];
 }

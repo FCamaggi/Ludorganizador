@@ -44,6 +44,66 @@ router.delete('/users/:id', adminAuth, async (req, res) => {
     }
 });
 
+// Update user role
+router.patch('/users/:id/role', adminAuth, async (req, res) => {
+    try {
+        const { role } = req.body;
+
+        if (!['user', 'admin'].includes(role)) {
+            return res.status(400).json({ error: 'Rol inválido' });
+        }
+
+        const user = await User.findById(req.params.id);
+
+        if (!user) {
+            return res.status(404).json({ error: 'Usuario no encontrado' });
+        }
+
+        // Prevent changing your own role
+        if (user._id.toString() === req.user._id.toString()) {
+            return res.status(400).json({ error: 'No puedes cambiar tu propio rol' });
+        }
+
+        user.role = role;
+        await user.save();
+
+        res.json({ message: 'Rol actualizado correctamente', user: { ...user.toObject(), password: undefined } });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// Update user badges
+router.patch('/users/:id/badges', adminAuth, async (req, res) => {
+    try {
+        const { badges } = req.body;
+
+        if (!Array.isArray(badges)) {
+            return res.status(400).json({ error: 'Badges debe ser un array' });
+        }
+
+        const validBadges = ['veterano', 'vip', 'organizador', 'fundador'];
+        const invalidBadges = badges.filter(b => !validBadges.includes(b));
+
+        if (invalidBadges.length > 0) {
+            return res.status(400).json({ error: `Badges inválidos: ${invalidBadges.join(', ')}` });
+        }
+
+        const user = await User.findById(req.params.id);
+
+        if (!user) {
+            return res.status(404).json({ error: 'Usuario no encontrado' });
+        }
+
+        user.badges = badges;
+        await user.save();
+
+        res.json({ message: 'Badges actualizados correctamente', user: { ...user.toObject(), password: undefined } });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
 // ============ EVENTS MANAGEMENT ============
 
 // Get all events (admin view with full details)
@@ -161,19 +221,29 @@ router.delete('/freegames/:id', adminAuth, async (req, res) => {
 
 router.get('/stats', adminAuth, async (req, res) => {
     try {
-        const [usersCount, eventsCount, tablesCount, gamesCount] = await Promise.all([
+        const [usersCount, eventsCount, archivedEventsCount] = await Promise.all([
             User.countDocuments(),
-            Event.countDocuments(),
-            Table.countDocuments(),
-            FreeGame.countDocuments()
+            Event.countDocuments({ archived: false }),
+            Event.countDocuments({ archived: true })
         ]);
 
         res.json({
             users: usersCount,
             events: eventsCount,
-            tables: tablesCount,
-            freeGames: gamesCount
+            archivedEvents: archivedEventsCount
         });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// Get archived events
+router.get('/archived-events', adminAuth, async (req, res) => {
+    try {
+        const archivedEvents = await Event.find({ archived: true })
+            .sort({ archivedAt: -1 })
+            .select('title date archivedAt creatorId');
+        res.json(archivedEvents);
     } catch (error) {
         res.status(500).json({ error: error.message });
     }

@@ -15,14 +15,20 @@ const freeGameSchema = new mongoose.Schema({
     type: String,
     required: true
   },
-  gameName: {
-    type: String,
+  games: {
+    type: [
+      {
+        name: { type: String, required: true, trim: true },
+        note: { type: String, default: '' }
+      }
+    ],
     required: true,
-    trim: true
-  },
-  note: {
-    type: String,
-    default: ''
+    validate: {
+      validator: function(v) {
+        return v && v.length > 0;
+      },
+      message: 'Debe haber al menos un juego en la lista'
+    }
   },
   createdAt: {
     type: Date,

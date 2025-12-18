@@ -1,121 +1,150 @@
-# Ludorganizador - Organizador de Eventos de Juegos de Mesa
+# 🎲 Ludorganizador
 
-Aplicación web completa para organizar eventos de juegos de mesa con autenticación de usuarios, gestión de mesas y ludoteca compartida.
+Sistema completo de gestión de eventos de juegos de mesa con arquitectura moderna y modular.
 
-## 🏗️ Arquitectura
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.8-blue)](https://www.typescriptlang.org/)
+[![React](https://img.shields.io/badge/React-19-61dafb)](https://react.dev/)
+[![Node.js](https://img.shields.io/badge/Node.js-18+-green)](https://nodejs.org/)
+[![MongoDB](https://img.shields.io/badge/MongoDB-7+-47A248)](https://www.mongodb.com/)
 
-- **Frontend**: React + TypeScript + Vite (desplegado en Netlify)
-- **Backend**: Node.js + Express (desplegado en Render)
-- **Base de datos**: MongoDB Atlas (persistencia en la nube)
-- **Autenticación**: JWT (JSON Web Tokens)
-- **ODM**: Mongoose para interacción con MongoDB
+> ⚠️ **IMPORTANTE:** Este proyecto ha sido completamente refactorizado. Ver [Resumen de Refactorización](docs/REFACTORING_SUMMARY.md) para detalles.
 
-## 🚀 Desarrollo Local
+## 📚 Documentación Completa
 
-### Prerrequisitos
+Este proyecto cuenta con documentación exhaustiva:
 
-- Node.js 20+
-- npm
+- 📖 **[Índice de Documentación](docs/INDEX.md)** - Guía de toda la documentación
+- 🏗️ **[Arquitectura](docs/ARCHITECTURE.md)** - Diseño y patrones del sistema
+- 🗺️ **[Mapas Visuales](docs/ARCHITECTURE_MAP.md)** - Diagramas de arquitectura
+- 💻 **[Frontend](docs/FRONTEND.md)** - Componentes, hooks y servicios
+- 🔌 **[API](docs/API.md)** - Documentación completa de endpoints
+- 🔄 **[Migración](docs/MIGRATION.md)** - Guía de migración a nueva estructura
+- 📝 **[Comandos](docs/COMMANDS.md)** - Referencia rápida de comandos
+- 🤝 **[Contribuir](CONTRIBUTING.md)** - Guía de contribución
+
+## ✨ Características
+
+### Para Usuarios
+
+- 🎯 Crear y gestionar eventos de juegos de mesa
+- 🎲 Organizar mesas con límites de jugadores
+- 👥 Sistema de registro en mesas
+- 📚 Compartir ludoteca personal
+- 🔒 Eventos privados con contraseña
+- 📱 Interfaz responsive
+
+### Para Desarrolladores
+
+- 🏗️ Arquitectura modular y escalable
+- 🔧 Separación clara de responsabilidades
+- 📦 Componentes reutilizables
+- 🎣 Custom hooks para lógica de negocio
+- 🔌 Capa de servicios para API
+- 📘 TypeScript en todo el proyecto
+- 📚 Documentación exhaustiva (200+ KB)
+
+## 🏗️ Tecnologías
+
+### Frontend
+
+- React 19 + TypeScript 5.8
+- Vite 6 (build tool)
+- Tailwind CSS
+- Custom Hooks Pattern
+- Service Layer Pattern
+
+### Backend
+
+- Node.js + Express
+- MongoDB + Mongoose
+- JWT Authentication
+- bcrypt para hashing
+
+## 🚀 Inicio Rápido
 
 ### Instalación
 
-1. **Instalar dependencias del frontend**:
+```bash
+# Clonar repositorio
+git clone https://github.com/FCamaggi/Ludorganizador.git
+cd Ludorganizador
 
-   ```bash
-   npm install
-   ```
+# Instalar dependencias
+npm install
+cd server && npm install && cd ..
 
-2. **Instalar dependencias del backend**:
+# Configurar variables de entorno
+cp .env.example .env
+cp server/.env.example server/.env
 
-   ```bash
-   npm run server:install
-   ```
+# Editar archivos .env con tus configuraciones
+```
 
-3. **Configurar variables de entorno**:
+### Desarrollo
 
-   **Backend** (`server/.env`):
+```bash
+# Terminal 1 - Frontend (puerto 5173)
+npm run dev
 
-   ```bash
-   cp server/.env.example server/.env
-   ```
+# Terminal 2 - Backend (puerto 3001)
+cd server && npm run dev
+```
 
-   Edita `server/.env` y configura:
+> 📖 Para más detalles, ver [Guía de Comandos](docs/COMMANDS.md)
 
-   - `JWT_SECRET`: Una clave secreta segura para JWT
-   - `PORT`: Puerto del servidor (por defecto 3001)
-   - `MONGODB_URI`: URI de conexión a MongoDB (ver [MONGODB_SETUP.md](MONGODB_SETUP.md))
+## 📁 Estructura del Proyecto (Refactorizada)
 
-   **Frontend** (`.env.local`):
+```
+Ludorganizador/
+├── src/                      # Frontend (NUEVO)
+│   ├── components/
+│   │   ├── ui/              # Componentes base
+│   │   ├── auth/            # Autenticación
+│   │   ├── events/          # Eventos
+│   │   ├── tables/          # Mesas
+│   │   └── admin/           # Admin
+│   ├── hooks/               # Custom hooks (NUEVO)
+│   ├── services/            # API services (REFACTORIZADO)
+│   ├── types/               # TypeScript types
+│   ├── utils/               # Utilidades (NUEVO)
+│   └── constants/           # Constantes (NUEVO)
+├── server/                  # Backend
+│   ├── config/              # Configuración (NUEVO)
+│   ├── controllers/         # Controllers
+│   ├── middleware/          # Auth, admin
+│   ├── models/              # Mongoose models
+│   └── routes/              # API routes
+└── docs/                    # Documentación (NUEVO)
+    ├── INDEX.md             # Índice de docs
+    ├── ARCHITECTURE.md      # Arquitectura
+    ├── API.md               # API docs
+    └── FRONTEND.md          # Frontend guide
+```
 
-   ```bash
-   cp .env.example .env.local
-   ```
+## 🔐 Seguridad
 
-   Edita `.env.local`:
+- ✅ Autenticación JWT
+- ✅ Contraseñas hasheadas con bcrypt
+- ✅ Eventos privados con contraseña
+- ✅ Validación de inputs
+- ✅ Autorización por roles (user/admin)
 
-   - `VITE_API_URL`: URL de tu backend (desarrollo: http://localhost:3001/api)
+## 📝 Scripts Disponibles
 
-### Configurar MongoDB Atlas
+```bash
+# Frontend
+npm run dev          # Desarrollo
+npm run build        # Build producción
+npm run preview      # Preview build
 
-Sigue la guía completa en [MONGODB_SETUP.md](MONGODB_SETUP.md) para:
+# Backend
+cd server
+npm run dev          # Desarrollo con watch
+npm start            # Producción
+node makeAdmin.js    # Hacer admin a usuario
+```
 
-- Crear una cuenta gratuita en MongoDB Atlas
-- Configurar tu cluster
-- Obtener la URI de conexión
-- Configurar seguridad
-
-### Ejecutar en desarrollo
-
-1. **Iniciar el backend**:
-
-   ```bash
-   npm run server:dev
-   ```
-
-   El servidor estará en http://localhost:3001
-
-2. **Iniciar el frontend** (en otra terminal):
-   ```bash
-   npm run dev
-   ```
-   La aplicación estará en http://localhost:5173
-
-## 📦 Despliegue en Producción
-
-### Desplegar Backend en Render
-
-1. Crea una cuenta en [Render](https://render.com)
-2. Conecta tu repositorio de GitHub
-3. Crea un nuevo **Web Service**
-4. Configuración:
-   - **Build Command**: `cd server && npm install`
-   - **Start Command**: `cd server && npm start`
-   - **Environment**: Node
-5. Variables de entorno:
-   - `JWT_SECRET`: Genera una clave segura
-   - `NODE_ENV`: production
-   - `PORT`: 10000 (o el que asigne Render)
-   - `MONGODB_URI`: Tu URI de MongoDB Atlas (ver [MONGODB_SETUP.md](MONGODB_SETUP.md))
-
-### Desplegar Frontend en Netlify
-
-1. Crea una cuenta en [Netlify](https://netlify.com)
-2. Conecta tu repositorio de GitHub
-3. Configuración de build:
-   - **Build Command**: `npm run build`
-   - **Publish Directory**: `dist`
-4. Variables de entorno:
-   - `VITE_API_URL`: URL de tu backend en Render (ej: https://tu-app.onrender.com/api)
-5. Despliega
-
-## 🔐 Características de Seguridad
-
-- **Autenticación JWT**: Sistema completo de registro e inicio de sesión
-- **Eventos privados**: Contraseñas para eventos con información protegida
-- **Tokens con expiración**: Los tokens JWT expiran en 7 días
-- **Validación de contraseñas**: Mínimo 6 caracteres
-
-## 📝 API Endpoints
+## 🎯 Características Principales
 
 ### Autenticación
 
@@ -141,24 +170,23 @@ Sigue la guía completa en [MONGODB_SETUP.md](MONGODB_SETUP.md) para:
 - `GET /api/games/event/:eventId` - Obtener juegos de un evento
 - `POST /api/games` - Agregar juego (requiere auth)
 
-## 🔄 Migración desde localStorage
+Para la documentación completa de la API, consulta [docs/API.md](docs/API.md).
 
-La aplicación anteriormente usaba localStorage. Para migrar a producción:
+## 📚 Recursos Adicionales
 
-1. Los usuarios existentes necesitarán crear una cuenta
-2. Los eventos y mesas se cargarán desde el servidor
-3. Los datos se comparten entre todos los usuarios autenticados
+- **[Documentación Completa](docs/INDEX.md)** - Índice de toda la documentación
+- **[Guía de Migración](docs/MIGRATION.md)** - Pasos para migrar código antiguo
+- **[Guía de Arquitectura](docs/ARCHITECTURE.md)** - Patrones y decisiones de diseño
+- **[Referencia de Comandos](docs/COMMANDS.md)** - Comandos útiles para desarrollo
 
-## 🛠️ Próximas Mejoras
+## 🤝 Contribuir
 
-- [ ] Base de datos persistente (MongoDB o PostgreSQL)
-- [ ] Recuperación de contraseña
-- [ ] Perfiles de usuario con avatar
-- [ ] Notificaciones en tiempo real (WebSockets)
-- [ ] Sistema de comentarios en eventos
-- [ ] Calendario de eventos
-- [ ] Filtros y búsqueda avanzada
+Lee [CONTRIBUTING.md](CONTRIBUTING.md) para conocer las guías de contribución, estándares de código y el proceso de pull requests.
 
 ## 📄 Licencia
 
 MIT
+
+---
+
+**Nota**: Este proyecto ha sido completamente refactorizado para mejorar la modularidad, separación de responsabilidades y mantenibilidad. Consulta [docs/REFACTORING_SUMMARY.md](docs/REFACTORING_SUMMARY.md) para detalles sobre los cambios realizados.

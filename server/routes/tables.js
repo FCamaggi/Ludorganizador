@@ -1,6 +1,7 @@
 import express from 'express';
 import { authenticateToken } from '../middleware/auth.js';
 import Table from '../models/Table.js';
+import User from '../models/User.js';
 
 const router = express.Router();
 
@@ -9,11 +10,23 @@ router.get('/event/:eventId', async (req, res) => {
   try {
     const tables = await Table.find({ eventId: req.params.eventId }).sort({ createdAt: -1 });
 
+    // Obtener información de usuarios únicos (hosts)
+    const hostIds = [...new Set(tables.map(t => t.hostId.toString()))];
+    const hosts = await User.find({ _id: { $in: hostIds } }).select('_id badges role');
+    const hostBadgesMap = {};
+    const hostRoleMap = {};
+    hosts.forEach(host => {
+      hostBadgesMap[host._id.toString()] = host.badges || [];
+      hostRoleMap[host._id.toString()] = host.role;
+    });
+
     const tablesResponse = tables.map(table => ({
       id: table._id,
       eventId: table.eventId,
       hostId: table.hostId,
       hostName: table.hostName,
+      hostBadges: hostBadgesMap[table.hostId.toString()] || [],
+      hostRole: hostRoleMap[table.hostId.toString()],
       gameName: table.gameName,
       description: table.description,
       minPlayers: table.minPlayers,

@@ -28,6 +28,18 @@ const eventSchema = new mongoose.Schema({
     ref: 'User',
     required: true
   },
+  showMap: {
+    type: Boolean,
+    default: true
+  },
+  archived: {
+    type: Boolean,
+    default: false
+  },
+  archivedAt: {
+    type: Date,
+    default: null
+  },
   createdAt: {
     type: Date,
     default: Date.now

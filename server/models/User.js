@@ -22,6 +22,11 @@ const userSchema = new mongoose.Schema({
     enum: ['user', 'admin'],
     default: 'user'
   },
+  badges: {
+    type: [String],
+    enum: ['veterano', 'vip', 'organizador', 'fundador'],
+    default: []
+  },
   createdAt: {
     type: Date,
     default: Date.now

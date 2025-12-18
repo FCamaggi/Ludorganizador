@@ -4,77 +4,129 @@ import FreeGame from '../models/FreeGame.js';
 
 const router = express.Router();
 
-// Obtener juegos libres de un evento
+// Obtener juegos libres de un evento (agrupados por usuario)
 router.get('/event/:eventId', async (req, res) => {
   try {
-    const games = await FreeGame.find({ eventId: req.params.eventId }).sort({ createdAt: -1 });
+    const gameLists = await FreeGame.find({ eventId: req.params.eventId })
+      .populate('ownerId', 'name badges role')
+      .sort({ createdAt: -1 });
 
-    const gamesResponse = games.map(game => ({
-      id: game._id,
-      eventId: game.eventId,
-      ownerId: game.ownerId,
-      ownerName: game.ownerName,
-      gameName: game.gameName,
-      note: game.note
+    const gameListsResponse = gameLists.map(list => ({
+      id: list._id,
+      eventId: list.eventId,
+      ownerId: list.ownerId._id,
+      ownerName: list.ownerName,
+      ownerBadges: list.ownerId.badges || [],
+      ownerRole: list.ownerId.role,
+      games: list.games
     }));
 
-    res.json(gamesResponse);
+    res.json(gameListsResponse);
   } catch (error) {
     console.error('Error al obtener juegos:', error);
     res.status(500).json({ error: 'Error al obtener juegos' });
   }
 });
 
-// Agregar juego libre (requiere autenticación)
+// Agregar lista de juegos (requiere autenticación)
 router.post('/', authenticateToken, async (req, res) => {
   try {
-    const { eventId, gameName, note } = req.body;
+    const { eventId, games } = req.body;
 
-    if (!eventId || !gameName) {
-      return res.status(400).json({ error: 'Faltan campos requeridos' });
+    if (!eventId || !games || !Array.isArray(games) || games.length === 0) {
+      return res.status(400).json({ error: 'Faltan campos requeridos o la lista de juegos está vacía' });
     }
 
-    const game = await FreeGame.create({
+    // Validar que cada juego tenga nombre
+    for (const game of games) {
+      if (!game.name || game.name.trim() === '') {
+        return res.status(400).json({ error: 'Cada juego debe tener un nombre' });
+      }
+    }
+
+    const gameList = await FreeGame.create({
       eventId,
       ownerId: req.user.id,
       ownerName: req.user.name,
-      gameName,
-      note: note || ''
+      games
     });
 
+    const populated = await FreeGame.findById(gameList._id).populate('ownerId', 'name badges role');
+
     res.status(201).json({
-      id: game._id,
-      eventId: game.eventId,
-      ownerId: game.ownerId,
-      ownerName: game.ownerName,
-      gameName: game.gameName,
-      note: game.note
+      id: populated._id,
+      eventId: populated.eventId,
+      ownerId: populated.ownerId._id,
+      ownerName: populated.ownerName,
+      ownerBadges: populated.ownerId.badges || [],
+      ownerRole: populated.ownerId.role,
+      games: populated.games
     });
   } catch (error) {
-    console.error('Error al agregar juego:', error);
-    res.status(500).json({ error: 'Error al agregar juego' });
+    console.error('Error al agregar lista de juegos:', error);
+    res.status(500).json({ error: 'Error al agregar lista de juegos' });
   }
 });
 
-// Eliminar juego libre (requiere ser el creador o admin)
+// Actualizar lista de juegos (requiere ser el creador)
+router.put('/:id', authenticateToken, async (req, res) => {
+  try {
+    const { games } = req.body;
+
+    if (!games || !Array.isArray(games) || games.length === 0) {
+      return res.status(400).json({ error: 'La lista de juegos no puede estar vacía' });
+    }
+
+    const gameList = await FreeGame.findById(req.params.id);
+
+    if (!gameList) {
+      return res.status(404).json({ error: 'Lista de juegos no encontrada' });
+    }
+
+    // Verificar que el usuario sea el creador
+    if (gameList.ownerId.toString() !== req.user.id && req.user.role !== 'admin') {
+      return res.status(403).json({ error: 'No tienes permiso para editar esta lista' });
+    }
+
+    gameList.games = games;
+    await gameList.save();
+
+    const populated = await FreeGame.findById(gameList._id).populate('ownerId', 'name badges role');
+
+    res.json({
+      id: populated._id,
+      eventId: populated.eventId,
+      ownerId: populated.ownerId._id,
+      ownerName: populated.ownerName,
+      ownerBadges: populated.ownerId.badges || [],
+      ownerRole: populated.ownerId.role,
+      games: populated.games
+    });
+  } catch (error) {
+    console.error('Error al actualizar lista de juegos:', error);
+    res.status(500).json({ error: 'Error al actualizar lista de juegos' });
+  }
+});
+
+// Eliminar lista de juegos (requiere ser el creador o admin)
 router.delete('/:id', authenticateToken, async (req, res) => {
   try {
-    const game = await FreeGame.findById(req.params.id);
+    const gameList = await FreeGame.findById(req.params.id);
 
-    if (!game) {
-      return res.status(404).json({ error: 'Juego no encontrado' });
+    if (!gameList) {
+      return res.status(404).json({ error: 'Lista de juegos no encontrada' });
     }
 
     // Verificar que el usuario sea el creador o admin
-    if (game.ownerId.toString() !== req.user.id && req.user.role !== 'admin') {
-      return res.status(403).json({ error: 'No tienes permiso para eliminar este juego' });
+    if (gameList.ownerId.toString() !== req.user.id && req.user.role !== 'admin') {
+      return res.status(403).json({ error: 'No tienes permiso para eliminar esta lista' });
     }
 
     await FreeGame.findByIdAndDelete(req.params.id);
-    res.json({ message: 'Juego eliminado exitosamente' });
+    res.json({ message: 'Lista de juegos eliminada exitosamente' });
   } catch (error) {
-    console.error('Error al eliminar juego:', error);
-    res.status(500).json({ error: 'Error al eliminar juego' });
+    console.error('Error al eliminar lista de juegos:', error);
+    res.status(500).json({ error: 'Error al eliminar lista de juegos' });
   }
 });
 

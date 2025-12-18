@@ -392,7 +392,7 @@ const App: React.FC = () => {
       </header>
 
       {/* Main Content */}
-      <main className="max-w-5xl mx-auto px-4 py-8">
+      <main className="max-w-5xl mx-auto px-4 py-8 pb-16">
         {view === 'events' && (
           <EventsView
             events={events}
@@ -423,6 +423,14 @@ const App: React.FC = () => {
           />
         )}
       </main>
+
+      {/* Footer */}
+      <footer className="fixed bottom-0 left-0 right-0 bg-gradient-to-t from-slate-100 to-transparent py-3 text-center">
+        <p className="text-xs text-gray-500">
+          Desarrollado con <span className="text-red-500">❤️</span> por{' '}
+          <span className="font-medium text-gray-700">Fabrizio Camaggi</span>
+        </p>
+      </footer>
 
       {/* Modals */}
       <Modal

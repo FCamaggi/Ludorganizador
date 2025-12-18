@@ -106,7 +106,7 @@ export const TableForm: React.FC<TableFormProps> = ({
           <input
             type="number"
             value={minPlayers}
-            onChange={(e) => setMinPlayers(parseInt(e.target.value) || 2)}
+            onChange={(e) => setMinPlayers(Number(e.target.value) || 2)}
             min="2"
             max={maxPlayers}
             className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
@@ -122,7 +122,7 @@ export const TableForm: React.FC<TableFormProps> = ({
           <input
             type="number"
             value={maxPlayers}
-            onChange={(e) => setMaxPlayers(parseInt(e.target.value) || 4)}
+            onChange={(e) => setMaxPlayers(Number(e.target.value) || 4)}
             min={minPlayers}
             max="20"
             className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"

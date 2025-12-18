@@ -331,3 +331,68 @@ export const deleteFreeGame = async (gameId: string): Promise<void> => {
   );
   await handleResponse<void>(response);
 };
+
+/**
+ * Elimina un juego individual de una lista
+ */
+export const deleteIndividualGame = async (
+  gameListId: string,
+  gameIndex: number
+): Promise<{ deleted: boolean; gameList?: FreeGame }> => {
+  const response = await fetch(
+    `${API_CONFIG.BASE_URL}/games/${gameListId}/game/${gameIndex}`,
+    {
+      method: 'DELETE',
+      headers: authHeaders(),
+    }
+  );
+  return handleResponse<{ deleted: boolean; gameList?: FreeGame }>(response);
+};
+
+/**
+ * Actualiza una lista de juegos libres
+ */
+export const updateFreeGame = async (
+  gameId: string,
+  games: { name: string; note?: string }[]
+): Promise<FreeGame> => {
+  const response = await fetch(
+    `${API_CONFIG.BASE_URL}${API_ROUTES.GAMES.BY_ID(gameId)}`,
+    {
+      method: 'PUT',
+      headers: authHeaders(),
+      body: JSON.stringify({ games }),
+    }
+  );
+  return handleResponse<FreeGame>(response);
+};
+
+// ============ ADMIN ============
+
+/**
+ * Obtiene usuarios pendientes de aprobación
+ */
+export const getPendingUsers = async (): Promise<any[]> => {
+  const response = await fetch(
+    `${API_CONFIG.BASE_URL}/admin/pending-users`,
+    {
+      headers: authHeaders(),
+    }
+  );
+  return handleResponse<any[]>(response);
+};
+
+/**
+ * Aprueba un usuario (cambia rol de 'nuevo' a 'user')
+ */
+export const approveUser = async (userId: string): Promise<void> => {
+  const response = await fetch(
+    `${API_CONFIG.BASE_URL}/admin/users/${userId}/approve`,
+    {
+      method: 'PATCH',
+      headers: authHeaders(),
+    }
+  );
+  await handleResponse<void>(response);
+};
+

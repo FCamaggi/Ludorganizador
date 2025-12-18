@@ -10,8 +10,9 @@ export interface User {
   id: string;
   name: string;
   email: string;
-  role?: 'user' | 'admin';
+  role?: 'nuevo' | 'user' | 'admin';
   badges?: string[];
+  approved?: boolean; // Si fue aprobado por un admin (solo para rol 'nuevo')
 }
 
 /**
@@ -34,7 +35,7 @@ export interface GameEvent {
   creatorId?: string; // ID del creador del evento
   creatorName?: string; // Nombre del creador
   creatorBadges?: string[]; // Badges del creador
-  creatorRole?: 'user' | 'admin'; // Rol del creador
+  creatorRole?: 'nuevo' | 'user' | 'admin'; // Rol del creador
   showMap?: boolean; // Mostrar mapa embebido
 }
 
@@ -47,7 +48,7 @@ export interface GameTable {
   hostName: string;
   hostId: string;
   hostBadges?: string[]; // Badges del host
-  hostRole?: 'user' | 'admin'; // Rol del host
+  hostRole?: 'nuevo' | 'user' | 'admin'; // Rol del host
   gameName: string;
   description: string;
   imageUrl?: string;
@@ -65,7 +66,7 @@ export interface FreeGame {
   ownerName: string;
   ownerId: string;
   ownerBadges?: string[];
-  ownerRole?: 'user' | 'admin';
+  ownerRole?: 'nuevo' | 'user' | 'admin';
   games: {
     name: string;
     note?: string;

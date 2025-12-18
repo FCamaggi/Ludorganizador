@@ -48,6 +48,22 @@ export const useFreeGames = (eventId: string | null) => {
     await loadFreeGames();
   };
 
+  const deleteIndividualGame = async (
+    gameListId: string,
+    gameIndex: number
+  ): Promise<void> => {
+    const result = await api.deleteIndividualGame(gameListId, gameIndex);
+    if (result.deleted) {
+      // Se eliminó toda la lista
+      setFreeGames((prev) => prev.filter((g) => g.id !== gameListId));
+    } else if (result.gameList) {
+      // Se actualizó la lista
+      setFreeGames((prev) =>
+        prev.map((g) => (g.id === gameListId ? result.gameList! : g))
+      );
+    }
+  };
+
   return {
     freeGames,
     loading,
@@ -55,5 +71,6 @@ export const useFreeGames = (eventId: string | null) => {
     loadFreeGames,
     createFreeGame,
     deleteFreeGame,
+    deleteIndividualGame,
   };
 };

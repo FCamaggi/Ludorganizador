@@ -49,7 +49,7 @@ router.patch('/users/:id/role', adminAuth, async (req, res) => {
     try {
         const { role } = req.body;
 
-        if (!['user', 'admin'].includes(role)) {
+        if (!['nuevo', 'user', 'admin'].includes(role)) {
             return res.status(400).json({ error: 'Rol inválido' });
         }
 
@@ -68,6 +68,41 @@ router.patch('/users/:id/role', adminAuth, async (req, res) => {
         await user.save();
 
         res.json({ message: 'Rol actualizado correctamente', user: { ...user.toObject(), password: undefined } });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// Approve user (change from 'nuevo' to 'user')
+router.patch('/users/:id/approve', adminAuth, async (req, res) => {
+    try {
+        const user = await User.findById(req.params.id);
+
+        if (!user) {
+            return res.status(404).json({ error: 'Usuario no encontrado' });
+        }
+
+        if (user.role !== 'nuevo') {
+            return res.status(400).json({ error: 'El usuario ya está aprobado o tiene un rol diferente' });
+        }
+
+        user.role = 'user';
+        user.approved = true;
+        await user.save();
+
+        res.json({ message: 'Usuario aprobado correctamente', user: { ...user.toObject(), password: undefined } });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// Get pending users (rol 'nuevo')
+router.get('/pending-users', adminAuth, async (req, res) => {
+    try {
+        const pendingUsers = await User.find({ role: 'nuevo' })
+            .select('-password')
+            .sort({ createdAt: -1 });
+        res.json(pendingUsers);
     } catch (error) {
         res.status(500).json({ error: error.message });
     }
@@ -221,16 +256,18 @@ router.delete('/freegames/:id', adminAuth, async (req, res) => {
 
 router.get('/stats', adminAuth, async (req, res) => {
     try {
-        const [usersCount, eventsCount, archivedEventsCount] = await Promise.all([
+        const [usersCount, eventsCount, archivedEventsCount, pendingUsersCount] = await Promise.all([
             User.countDocuments(),
             Event.countDocuments({ archived: false }),
-            Event.countDocuments({ archived: true })
+            Event.countDocuments({ archived: true }),
+            User.countDocuments({ role: 'nuevo' })
         ]);
 
         res.json({
             users: usersCount,
             events: eventsCount,
-            archivedEvents: archivedEventsCount
+            archivedEvents: archivedEventsCount,
+            pendingUsers: pendingUsersCount
         });
     } catch (error) {
         res.status(500).json({ error: error.message });

@@ -26,6 +26,7 @@ interface Stats {
   users: number;
   events: number;
   archivedEvents: number;
+  pendingUsers: number;
 }
 
 interface ArchivedEvent {
@@ -41,12 +42,13 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
   showToast,
 }) => {
   const [activeTab, setActiveTab] = useState<
-    'users' | 'events' | 'archived' | 'stats'
+    'users' | 'events' | 'archived' | 'stats' | 'pending'
   >('stats');
   const [stats, setStats] = useState<Stats | null>(null);
   const [users, setUsers] = useState<User[]>([]);
   const [events, setEvents] = useState<any[]>([]);
   const [archivedEvents, setArchivedEvents] = useState<ArchivedEvent[]>([]);
+  const [pendingUsers, setPendingUsers] = useState<User[]>([]);
   const [userBeingEdited, setUserBeingEdited] = useState<string | null>(null);
   const [editingBadges, setEditingBadges] = useState<{
     [key: string]: string[];
@@ -83,6 +85,7 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
   useEffect(() => {
     if (activeTab === 'users') loadUsers();
     if (activeTab === 'events') loadEvents();
+    if (activeTab === 'pending') loadPendingUsers();
     if (activeTab === 'archived') loadArchivedEvents();
   }, [activeTab]);
 
@@ -178,6 +181,34 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
     setLoading(false);
   };
 
+  const loadPendingUsers = async () => {
+    setLoading(true);
+    try {
+      const res = await fetch(`${API_CONFIG.BASE_URL}/admin/pending-users`, {
+        headers: authHeaders(),
+      });
+      if (res.ok) {
+        const data = await res.json();
+        const mappedUsers = data.map((user: any) => ({
+          ...user,
+          id: user._id,
+        }));
+        setPendingUsers(mappedUsers);
+      } else {
+        const error = await res.json();
+        console.error('Error al cargar usuarios pendientes:', error);
+        showToast(
+          `Error: ${error.error || 'No se pudieron cargar los usuarios pendientes'}`,
+          'error'
+        );
+      }
+    } catch (error) {
+      console.error('Error loading pending users:', error);
+      showToast('Error de conexión al cargar usuarios pendientes', 'error');
+    }
+    setLoading(false);
+  };
+
   const handleRestoreEvent = async (eventId: string) => {
     try {
       const res = await fetch(
@@ -243,7 +274,15 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
   };
 
   const handleToggleRole = async (userId: string, currentRole: string) => {
-    const newRole = currentRole === 'admin' ? 'user' : 'admin';
+    // Ciclo: nuevo -> user -> admin -> user -> admin...
+    let newRole: string;
+    if (currentRole === 'nuevo') {
+      newRole = 'user';
+    } else if (currentRole === 'user') {
+      newRole = 'admin';
+    } else {
+      newRole = 'user';
+    }
 
     try {
       const res = await fetch(
@@ -259,12 +298,17 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
         setUsers((prev) =>
           prev.map((u) => (u.id === userId ? { ...u, role: newRole } : u))
         );
-        showToast(
-          `Usuario ${
-            newRole === 'admin' ? 'promovido a' : 'removido de'
-          } administrador`,
-          'success'
-        );
+        
+        let message = '';
+        if (newRole === 'admin') {
+          message = 'Usuario promovido a administrador';
+        } else if (newRole === 'user') {
+          message = currentRole === 'admin' ? 'Usuario removido de administrador' : 'Usuario aprobado';
+        } else if (newRole === 'nuevo') {
+          message = 'Usuario marcado como pendiente';
+        }
+        
+        showToast(message, 'success');
       } else {
         const error = await res.json();
         showToast(error.error || 'Error al cambiar rol', 'error');
@@ -300,6 +344,30 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
     } catch (error) {
       console.error('Error updating badges:', error);
       showToast('Error de conexión al actualizar badges', 'error');
+    }
+  };
+
+  const handleApproveUser = async (userId: string) => {
+    try {
+      const res = await fetch(
+        `${API_CONFIG.BASE_URL}/admin/users/${userId}/approve`,
+        {
+          method: 'PATCH',
+          headers: authHeaders(),
+        }
+      );
+
+      if (res.ok) {
+        setPendingUsers((prev) => prev.filter((u) => u.id !== userId));
+        loadStats();
+        showToast('Usuario aprobado correctamente', 'success');
+      } else {
+        const error = await res.json();
+        showToast(error.error || 'Error al aprobar usuario', 'error');
+      }
+    } catch (error) {
+      console.error('Error approving user:', error);
+      showToast('Error de conexión al aprobar usuario', 'error');
     }
   };
 
@@ -344,6 +412,21 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
           }`}
         >
           Estadísticas
+        </button>
+        <button
+          onClick={() => setActiveTab('pending')}
+          className={`px-4 py-2 font-medium transition-colors relative ${
+            activeTab === 'pending'
+              ? 'border-b-2 border-indigo-600 text-indigo-600'
+              : 'text-gray-500 hover:text-gray-700'
+          }`}
+        >
+          Solicitudes
+          {stats && stats.pendingUsers > 0 && (
+            <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center font-bold">
+              {stats.pendingUsers}
+            </span>
+          )}
         </button>
         <button
           onClick={() => setActiveTab('users')}
@@ -392,6 +475,13 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
             </div>
             <p className="text-3xl font-bold text-blue-600">{stats.users}</p>
           </div>
+          <div className="bg-amber-50 p-4 rounded-lg">
+            <div className="flex items-center gap-2 mb-2">
+              <AlertTriangle className="text-amber-600" size={24} />
+              <h3 className="font-semibold text-gray-700">Solicitudes Pendientes</h3>
+            </div>
+            <p className="text-3xl font-bold text-amber-600">{stats.pendingUsers}</p>
+          </div>
           <div className="bg-green-50 p-4 rounded-lg">
             <div className="flex items-center gap-2 mb-2">
               <Calendar className="text-green-600" size={24} />
@@ -399,7 +489,7 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
             </div>
             <p className="text-3xl font-bold text-green-600">{stats.events}</p>
           </div>
-          <div className="bg-orange-50 p-4 rounded-lg col-span-2">
+          <div className="bg-orange-50 p-4 rounded-lg">
             <div className="flex items-center gap-2 mb-2">
               <AlertTriangle className="text-orange-600" size={24} />
               <h3 className="font-semibold text-gray-700">
@@ -409,6 +499,71 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
             <p className="text-3xl font-bold text-orange-600">
               {stats.archivedEvents}
             </p>
+          </div>
+        </div>
+      )}
+
+      {/* Pending Users Tab */}
+      {activeTab === 'pending' && (
+        <div className="space-y-4">
+          <div className="bg-blue-50 border-l-4 border-blue-500 p-4 rounded">
+            <p className="text-sm text-blue-700">
+              <span className="font-medium">Aprobar usuarios:</span> Los nuevos usuarios se registran con rol "nuevo" y no pueden crear eventos ni mesas. Al aprobarlos, su rol cambia a "user" y obtienen acceso completo. Puedes cambiar el rol de cualquier usuario desde la pestaña de Usuarios.
+            </p>
+          </div>
+          <div className="space-y-2">
+          {loading ? (
+            <p className="text-center text-gray-500">Cargando...</p>
+          ) : pendingUsers.length === 0 ? (
+            <div className="text-center py-8 text-gray-500">
+              <Users size={48} className="mx-auto mb-4 opacity-20" />
+              <p>No hay usuarios pendientes de aprobación</p>
+            </div>
+          ) : (
+            pendingUsers.map((user) => (
+              <div
+                key={user.id}
+                className="p-4 bg-amber-50 rounded-lg border border-amber-200"
+              >
+                <div className="flex items-start justify-between mb-2">
+                  <div className="flex-1">
+                    <div className="flex items-center gap-2 mb-1">
+                      <p className="font-medium">{user.name}</p>
+                      <span className="flex items-center gap-1 text-xs bg-amber-100 text-amber-800 px-2 py-1 rounded">
+                        <AlertTriangle size={12} />
+                        Pendiente
+                      </span>
+                    </div>
+                    <p className="text-sm text-gray-500 mb-1">{user.email}</p>
+                    <p className="text-xs text-gray-400">
+                      Registrado: {new Date(user.createdAt).toLocaleDateString()}
+                    </p>
+                  </div>
+                  <div className="flex gap-2">
+                    <button
+                      onClick={() => handleApproveUser(user.id)}
+                      className="px-3 py-1.5 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors text-sm font-medium"
+                    >
+                      Aprobar
+                    </button>
+                    <button
+                      onClick={() =>
+                        setDeleteModal({
+                          type: 'user',
+                          id: user.id,
+                          name: user.name,
+                        })
+                      }
+                      className="p-1.5 text-red-500 hover:bg-red-50 rounded transition-colors"
+                      title="Rechazar solicitud"
+                    >
+                      <Trash2 size={18} />
+                    </button>
+                  </div>
+                </div>
+              </div>
+            ))
+          )}
           </div>
         </div>
       )}
@@ -525,12 +680,16 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
                         className={`p-2 rounded transition-colors ${
                           user.role === 'admin'
                             ? 'bg-indigo-100 text-indigo-600 hover:bg-indigo-200'
+                            : user.role === 'nuevo'
+                            ? 'bg-amber-100 text-amber-600 hover:bg-amber-200'
                             : 'bg-gray-200 text-gray-600 hover:bg-gray-300'
                         }`}
                         title={
                           user.role === 'admin'
-                            ? 'Remover admin'
-                            : 'Hacer admin'
+                            ? 'Cambiar a User'
+                            : user.role === 'user'
+                            ? 'Cambiar a Admin'
+                            : 'Aprobar usuario (cambiar a User)'
                         }
                       >
                         <Shield size={18} />

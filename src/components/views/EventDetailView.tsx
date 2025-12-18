@@ -29,6 +29,7 @@ interface EventDetailViewProps {
   onDeleteTable: (table: GameTable) => void;
   onAddFreeGame: () => void;
   onDeleteFreeGame: (game: FreeGame) => void;
+  onDeleteIndividualGame: (gameListId: string, gameIndex: number, gameName: string) => void;
   onDeleteEvent: (event: GameEvent) => void;
   onArchiveEvent: (event: GameEvent) => void;
   isLoading?: boolean;
@@ -48,6 +49,7 @@ export const EventDetailView: React.FC<EventDetailViewProps> = ({
   onDeleteTable,
   onAddFreeGame,
   onDeleteFreeGame,
+  onDeleteIndividualGame,
   onDeleteEvent,
   onArchiveEvent,
   isLoading = false,
@@ -292,14 +294,27 @@ export const EventDetailView: React.FC<EventDetailViewProps> = ({
                     {gameList.games.map((game, idx) => (
                       <div
                         key={idx}
-                        className="bg-gray-50 rounded p-3 border border-gray-100"
+                        className="bg-gray-50 rounded p-3 border border-gray-100 group relative"
                       >
-                        <p className="font-medium text-gray-900">{game.name}</p>
-                        {game.note && (
-                          <p className="text-sm text-gray-600 italic mt-1">
-                            "{game.note}"
-                          </p>
-                        )}
+                        <div className="flex items-start justify-between gap-2">
+                          <div className="flex-1">
+                            <p className="font-medium text-gray-900">{game.name}</p>
+                            {game.note && (
+                              <p className="text-sm text-gray-600 italic mt-1">
+                                "{game.note}"
+                              </p>
+                            )}
+                          </div>
+                          {canEdit && (
+                            <button
+                              onClick={() => onDeleteIndividualGame(gameList.id, idx, game.name)}
+                              className="opacity-0 group-hover:opacity-100 transition-opacity p-1 text-red-500 hover:bg-red-50 rounded"
+                              title="Eliminar este juego"
+                            >
+                              <Trash2 size={16} />
+                            </button>
+                          )}
+                        </div>
                       </div>
                     ))}
                   </div>

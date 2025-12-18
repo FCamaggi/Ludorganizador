@@ -34,6 +34,7 @@ const App: React.FC = () => {
   const [activeEventId, setActiveEventId] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<Tab>('tables');
   const [archivedEventsCount, setArchivedEventsCount] = useState(0);
+  const [pendingUsersCount, setPendingUsersCount] = useState(0);
 
   // Custom Hooks
   const {
@@ -60,6 +61,7 @@ const App: React.FC = () => {
     loading: gamesLoading,
     createFreeGame,
     deleteFreeGame,
+    deleteIndividualGame,
     loadFreeGames,
   } = useFreeGames(activeEventId);
 
@@ -100,9 +102,10 @@ const App: React.FC = () => {
   useEffect(() => {
     if (user) {
       loadEvents();
-      // Si es admin, cargar count de eventos archivados
+      // Si es admin, cargar count de eventos archivados y usuarios pendientes
       if (user.role === 'admin') {
         loadArchivedEventsCount();
+        loadPendingUsersCount();
       }
     }
   }, [user, loadEvents]);
@@ -129,10 +132,31 @@ const App: React.FC = () => {
       });
       if (res.ok) {
         const data = await res.json();
-        setArchivedEventsCount(data.archivedEvents || 0);
+        setPendingUsersCount(data.pendingUsers || 0);
       }
     } catch (error) {
       console.error('Error loading archived events count:', error);
+    }
+  };
+
+  const loadPendingUsersCount = async () => {
+    try {
+      const authUserStr = localStorage.getItem('ludorganizador_auth_user');
+      if (!authUserStr) return;
+      const authUser = JSON.parse(authUserStr);
+
+      const res = await fetch(`${API_CONFIG.BASE_URL}/admin/stats`, {
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${authUser.token}`,
+        },
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setPendingUsersCount(data.pendingUsers || 0);
+      }
+    } catch (error) {
+      console.error('Error loading pending users count:', error);
     }
   };
 
@@ -234,7 +258,7 @@ const App: React.FC = () => {
 
   const handleDeleteTable = async (table: GameTable) => {
     const isAdmin = user?.role === 'admin';
-    const isOwner = table.ownerId === user?.id;
+    const isOwner = table.hostId === user?.id;
     setConfirmDialog({
       isOpen: true,
       title: 'Eliminar Mesa',
@@ -265,25 +289,46 @@ const App: React.FC = () => {
 
   const handleDeleteFreeGame = async (game: FreeGame) => {
     const isAdmin = user?.role === 'admin';
-    const isContributor = game.contributorId === user?.id;
+    const isOwner = game.ownerId === user?.id;
     setConfirmDialog({
       isOpen: true,
-      title: 'Eliminar Juego Libre',
-      message: `¿Estás seguro de que deseas eliminar el juego "${game.gameName}"?`,
+      title: 'Eliminar Lista de Juegos',
+      message: `¿Estás seguro de que deseas eliminar toda tu lista de juegos?`,
       additionalInfo: isAdmin
-        ? 'Esta acción no se puede deshacer.'
-        : isContributor
-        ? 'Como quien añadió este juego, puedes eliminarlo en cualquier momento.'
+        ? 'Se eliminarán todos los juegos de la lista. Esta acción no se puede deshacer.'
+        : isOwner
+        ? 'Como quien añadió esta lista, puedes eliminarla en cualquier momento.'
         : undefined,
       onConfirm: async () => {
         try {
           await deleteFreeGame(game.id);
+        } catch (error: any) {
+          alert(error.message || 'Error al eliminar lista de juegos');
+        }
+      },
+    });
+  };
+
+  const handleDeleteIndividualGame = async (
+    gameListId: string,
+    gameIndex: number,
+    gameName: string
+  ) => {
+    setConfirmDialog({
+      isOpen: true,
+      title: 'Eliminar Juego',
+      message: `¿Estás seguro de que deseas eliminar "${gameName}" de tu lista?`,
+      additionalInfo: 'Si es el último juego, se eliminará toda la lista.',
+      onConfirm: async () => {
+        try {
+          await deleteIndividualGame(gameListId, gameIndex);
         } catch (error: any) {
           alert(error.message || 'Error al eliminar juego');
         }
       },
     });
   };
+
   const handleDeleteEvent = async (event: GameEvent) => {
     const isAdmin = user?.role === 'admin';
     setConfirmDialog({
@@ -393,11 +438,34 @@ const App: React.FC = () => {
 
       {/* Main Content */}
       <main className="max-w-5xl mx-auto px-4 py-8 pb-16">
+        {user.role === 'nuevo' && (
+          <div className="mb-6 bg-amber-50 border-l-4 border-amber-500 p-4 rounded">
+            <div className="flex">
+              <div className="flex-shrink-0">
+                <svg className="h-5 w-5 text-amber-400" viewBox="0 0 20 20" fill="currentColor">
+                  <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                </svg>
+              </div>
+              <div className="ml-3">
+                <p className="text-sm text-amber-700">
+                  <span className="font-medium">Cuenta pendiente de aprobación:</span> Tu cuenta ha sido registrada y está en la lista de espera. Un administrador la revisará y aprobará pronto. Una vez aprobada, podrás crear eventos y mesas.
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
+        
         {view === 'events' && (
           <EventsView
             events={events}
             onEventClick={handleEventClick}
-            onCreateEvent={() => setIsEventModalOpen(true)}
+            onCreateEvent={() => {
+              if (user.role === 'nuevo') {
+                showToast('Debes esperar a que un administrador apruebe tu cuenta', 'error');
+                return;
+              }
+              setIsEventModalOpen(true);
+            }}
             isLoading={eventsLoading}
           />
         )}
@@ -411,12 +479,25 @@ const App: React.FC = () => {
             activeTab={activeTab}
             onTabChange={setActiveTab}
             onBack={handleBackToEvents}
-            onCreateTable={() => setIsTableModalOpen(true)}
+            onCreateTable={() => {
+              if (user.role === 'nuevo') {
+                showToast('Debes esperar a que un administrador apruebe tu cuenta', 'error');
+                return;
+              }
+              setIsTableModalOpen(true);
+            }}
             onJoinTable={handleJoinTable}
             onLeaveTable={handleLeaveTable}
             onDeleteTable={handleDeleteTable}
-            onAddFreeGame={() => setIsFreeGameModalOpen(true)}
+            onAddFreeGame={() => {
+              if (user.role === 'nuevo') {
+                showToast('Debes esperar a que un administrador apruebe tu cuenta', 'error');
+                return;
+              }
+              setIsFreeGameModalOpen(true);
+            }}
             onDeleteFreeGame={handleDeleteFreeGame}
+            onDeleteIndividualGame={handleDeleteIndividualGame}
             onDeleteEvent={handleDeleteEvent}
             onArchiveEvent={handleArchiveEvent}
             isLoading={tablesLoading || gamesLoading}
@@ -511,6 +592,9 @@ const App: React.FC = () => {
             onEventChange={() => {
               loadEvents();
               loadArchivedEventsCount();
+              if (user.role === 'admin') {
+                loadPendingUsersCount();
+              }
             }}
             showToast={showToast}
           />

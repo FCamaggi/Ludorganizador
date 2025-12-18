@@ -19,8 +19,12 @@ const userSchema = new mongoose.Schema({
   },
   role: {
     type: String,
-    enum: ['user', 'admin'],
-    default: 'user'
+    enum: ['nuevo', 'user', 'admin'],
+    default: 'nuevo'
+  },
+  approved: {
+    type: Boolean,
+    default: false
   },
   badges: {
     type: [String],

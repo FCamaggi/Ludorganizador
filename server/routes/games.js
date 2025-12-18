@@ -130,4 +130,56 @@ router.delete('/:id', authenticateToken, async (req, res) => {
   }
 });
 
+// Eliminar juego individual de una lista (requiere ser el creador o admin)
+router.delete('/:id/game/:gameIndex', authenticateToken, async (req, res) => {
+  try {
+    const { id, gameIndex } = req.params;
+    const index = parseInt(gameIndex);
+
+    const gameList = await FreeGame.findById(id);
+
+    if (!gameList) {
+      return res.status(404).json({ error: 'Lista de juegos no encontrada' });
+    }
+
+    // Verificar que el usuario sea el creador o admin
+    if (gameList.ownerId.toString() !== req.user.id && req.user.role !== 'admin') {
+      return res.status(403).json({ error: 'No tienes permiso para editar esta lista' });
+    }
+
+    if (index < 0 || index >= gameList.games.length) {
+      return res.status(400).json({ error: 'Índice de juego inválido' });
+    }
+
+    // Si solo hay un juego, eliminar toda la lista
+    if (gameList.games.length === 1) {
+      await FreeGame.findByIdAndDelete(id);
+      return res.json({ message: 'Lista eliminada (era el último juego)', deleted: true });
+    }
+
+    // Eliminar el juego del array
+    gameList.games.splice(index, 1);
+    await gameList.save();
+
+    const populated = await FreeGame.findById(gameList._id).populate('ownerId', 'name badges role');
+
+    res.json({
+      message: 'Juego eliminado exitosamente',
+      deleted: false,
+      gameList: {
+        id: populated._id,
+        eventId: populated.eventId,
+        ownerId: populated.ownerId._id,
+        ownerName: populated.ownerName,
+        ownerBadges: populated.ownerId.badges || [],
+        ownerRole: populated.ownerId.role,
+        games: populated.games
+      }
+    });
+  } catch (error) {
+    console.error('Error al eliminar juego individual:', error);
+    res.status(500).json({ error: 'Error al eliminar juego individual' });
+  }
+});
+
 export default router;

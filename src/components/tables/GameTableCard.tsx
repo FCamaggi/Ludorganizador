@@ -41,8 +41,8 @@ const GameTableCard: React.FC<GameTableCardProps> = ({
   };
 
   return (
-    <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden flex flex-col h-full">
-      <div className="bg-gradient-to-r from-indigo-500 to-purple-600 p-4 text-white">
+    <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden flex flex-col h-[400px]">
+      <div className="bg-gradient-to-r from-indigo-500 to-purple-600 p-4 text-white flex-shrink-0">
         <div className="flex justify-between items-start">
           <h3 className="font-bold text-lg truncate pr-2">{table.gameName}</h3>
           <span className="text-xs bg-white/20 px-2 py-1 rounded-full whitespace-nowrap">
@@ -79,13 +79,13 @@ const GameTableCard: React.FC<GameTableCardProps> = ({
         </div>
       </div>
 
-      <div className="p-4 flex-grow flex flex-col">
-        <p className="text-sm text-gray-600 mb-4 flex-grow line-clamp-3 italic">
+      <div className="p-4 flex-grow flex flex-col overflow-hidden">
+        <p className="text-sm text-gray-600 mb-4 line-clamp-2 italic flex-shrink-0">
           "{table.description}"
         </p>
 
-        <div className="mb-4">
-          <h4 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2 flex justify-between">
+        <div className="flex-grow overflow-hidden flex flex-col">
+          <h4 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2 flex justify-between flex-shrink-0">
             <span>
               Jugadores ({table.registeredPlayers.length}/{table.maxPlayers})
             </span>
@@ -93,16 +93,16 @@ const GameTableCard: React.FC<GameTableCardProps> = ({
               <span className="text-red-500">Mesa Llena</span>
             )}
           </h4>
-          <div className="space-y-1">
+          <div className="space-y-1 overflow-y-auto pr-1 custom-scrollbar">
             {table.registeredPlayers.map((player) => (
               <div
                 key={player.id}
                 className="flex items-center gap-2 text-sm text-gray-700 bg-gray-50 px-2 py-1 rounded"
               >
-                <div className="w-2 h-2 rounded-full bg-indigo-400"></div>
-                {player.name}{' '}
+                <div className="w-2 h-2 rounded-full bg-indigo-400 flex-shrink-0"></div>
+                <span className="truncate">{player.name}</span>
                 {player.id === table.hostId && (
-                  <span className="text-xs text-indigo-500 font-bold">
+                  <span className="text-xs text-indigo-500 font-bold flex-shrink-0">
                     (Host)
                   </span>
                 )}
@@ -113,14 +113,14 @@ const GameTableCard: React.FC<GameTableCardProps> = ({
                 key={`empty-${i}`}
                 className="flex items-center gap-2 text-sm text-gray-300 px-2 py-1 border border-dashed border-gray-200 rounded"
               >
-                <div className="w-2 h-2 rounded-full bg-gray-200"></div>
-                Libre
+                <div className="w-2 h-2 rounded-full bg-gray-200 flex-shrink-0"></div>
+                <span>Libre</span>
               </div>
             ))}
           </div>
         </div>
 
-        <div className="mt-auto pt-2 space-y-2">
+        <div className="mt-auto pt-2 space-y-2 flex-shrink-0">
           {isJoined ? (
             <Button
               variant="outline"

@@ -1,5 +1,49 @@
 # Scripts del Servidor
 
+## Migración: Agregar Campo Username
+
+### Script: addUsernameField.js
+
+Este script migra usuarios existentes que solo tienen email para agregar el campo `username` requerido.
+
+**⚠️ IMPORTANTE:** Este script debe ejecutarse **UNA SOLA VEZ** después de actualizar a la nueva versión que requiere username.
+
+### Ejecución
+
+```bash
+cd server
+node scripts/addUsernameField.js
+```
+
+### ¿Qué hace el script?
+
+1. Busca todos los usuarios sin campo `username`
+2. Genera username automáticamente desde el email o nombre
+3. Asegura que cada username sea único
+4. Actualiza la base de datos
+
+### Ejemplo de salida
+
+```
+🔄 Conectando a MongoDB...
+✅ Conectado a MongoDB
+
+📊 Usuarios sin username encontrados: 3
+
+✅ Migrado: Juan Pérez -> username: juan
+✅ Migrado: María López -> username: maria
+✅ Migrado: Pedro García -> username: pedro
+
+📊 Resumen de migración:
+   ✅ Exitosos: 3
+   ❌ Errores: 0
+
+✨ Migración completada
+🔌 Desconectado de MongoDB
+```
+
+---
+
 ## Archivado Automático de Eventos
 
 ### Script: archiveOldEvents.js

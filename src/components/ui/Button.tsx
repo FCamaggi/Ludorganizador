@@ -4,6 +4,8 @@
  */
 
 import React from 'react';
+import { useTheme } from '../../contexts/ThemeContext';
+import { getTheme } from '../../constants';
 
 interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   variant?: 'primary' | 'secondary' | 'outline' | 'danger';
@@ -11,7 +13,7 @@ interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
 }
 
 /**
- * Botón reutilizable con diferentes variantes
+ * Botón reutilizable con diferentes variantes y soporte para tema oscuro
  */
 const Button: React.FC<ButtonProps> = ({
   children,
@@ -21,24 +23,37 @@ const Button: React.FC<ButtonProps> = ({
   disabled,
   ...props
 }) => {
+  const { theme: themeMode } = useTheme();
+  const theme = getTheme(themeMode === 'dark');
+
   const baseStyles =
     'px-4 py-2 rounded-lg font-medium transition-all duration-200 flex items-center justify-center gap-2 focus:outline-none focus:ring-2 focus:ring-offset-1 disabled:opacity-50 disabled:cursor-not-allowed';
 
   const variants = {
     primary:
-      'bg-indigo-600 text-white hover:bg-indigo-700 focus:ring-indigo-500 shadow-md hover:shadow-lg disabled:hover:bg-indigo-600',
+      'bg-[#FC2F00] text-white hover:bg-[#D42800] focus:ring-[#FC2F00] shadow-md hover:shadow-lg disabled:hover:bg-[#FC2F00]',
     secondary:
-      'bg-teal-500 text-white hover:bg-teal-600 focus:ring-teal-400 shadow-sm disabled:hover:bg-teal-500',
+      'bg-[#EC7D10] text-white hover:bg-[#D47010] focus:ring-[#EC7D10] shadow-sm disabled:hover:bg-[#EC7D10]',
     outline:
-      'border-2 border-gray-300 text-gray-700 hover:border-indigo-500 hover:text-indigo-600 bg-transparent disabled:hover:border-gray-300 disabled:hover:text-gray-700',
+      'border-2 border-[#FFBC0A] hover:border-[#FC2F00] hover:text-[#FC2F00] disabled:hover:border-[#FFBC0A]',
     danger:
       'bg-red-500 text-white hover:bg-red-600 focus:ring-red-400 disabled:hover:bg-red-500',
   };
+
+  // Estilos inline para outline que respetan el tema
+  const outlineStyle =
+    variant === 'outline'
+      ? {
+          color: theme.text.primary,
+          backgroundColor: 'transparent',
+        }
+      : {};
 
   return (
     <button
       className={`${baseStyles} ${variants[variant]} ${className}`}
       disabled={disabled || isLoading}
+      style={outlineStyle}
       {...props}
     >
       {isLoading && (

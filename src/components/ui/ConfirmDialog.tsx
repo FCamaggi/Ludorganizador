@@ -2,6 +2,9 @@ import React from 'react';
 import { AlertTriangle } from 'lucide-react';
 import Modal from '../ui/Modal';
 import Button from '../ui/Button';
+import { useTheme } from '../../contexts/ThemeContext';
+import { getTheme } from '../../constants';
+import { COLORS } from '../../constants/colors';
 
 interface ConfirmDialogProps {
   isOpen: boolean;
@@ -26,30 +29,44 @@ export const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
   type = 'danger',
   additionalInfo,
 }) => {
+  const { theme: themeMode } = useTheme();
+  const theme = getTheme(themeMode === 'dark');
+
   const handleConfirm = () => {
     onConfirm();
     onClose();
   };
 
+  const warningBg = type === 'danger' 
+    ? `${COLORS.accent.DEFAULT}15` 
+    : `${COLORS.primary.DEFAULT}15`;
+  
+  const warningColor = type === 'danger'
+    ? COLORS.accent.DEFAULT
+    : COLORS.primary.DEFAULT;
+
   return (
     <Modal isOpen={isOpen} onClose={onClose} title={title} size="sm">
       <div className="space-y-4">
         <div
-          className={`flex items-center gap-3 p-4 rounded-lg ${
-            type === 'danger' ? 'bg-red-50' : 'bg-amber-50'
-          }`}
+          className="flex items-center gap-3 p-4 rounded-lg"
+          style={{ backgroundColor: warningBg }}
         >
           <AlertTriangle
-            className={type === 'danger' ? 'text-red-600' : 'text-amber-600'}
+            style={{ color: warningColor }}
             size={24}
           />
-          <p className="text-sm">Esta acción no se puede deshacer.</p>
+          <p className="text-sm" style={{ color: theme.text.primary }}>
+            Esta acción no se puede deshacer.
+          </p>
         </div>
 
-        <p className="text-gray-700">{message}</p>
+        <p style={{ color: theme.text.primary }}>{message}</p>
 
         {additionalInfo && (
-          <p className="text-sm text-gray-600">{additionalInfo}</p>
+          <p className="text-sm" style={{ color: theme.text.secondary }}>
+            {additionalInfo}
+          </p>
         )}
 
         <div className="flex justify-end gap-2 pt-4">

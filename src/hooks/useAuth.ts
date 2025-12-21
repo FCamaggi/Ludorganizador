@@ -23,12 +23,19 @@ export const useAuth = () => {
   }, []);
 
   const login = async (credentials: LoginCredentials): Promise<void> => {
-    const authUser = await api.login(credentials.email, credentials.password);
+    const authUser = await api.login(
+      credentials.username,
+      credentials.password
+    );
     setUser(authUser);
   };
 
   const register = async (data: RegisterData): Promise<void> => {
-    const authUser = await api.register(data.name, data.email, data.password);
+    const authUser = await api.register(
+      data.name,
+      data.username,
+      data.password
+    );
     setUser(authUser);
   };
 
@@ -37,12 +44,18 @@ export const useAuth = () => {
     setUser(null);
   };
 
+  const refreshCurrentUser = async (): Promise<void> => {
+    const refreshedUser = await api.refreshUser();
+    setUser(refreshedUser);
+  };
+
   return {
     user,
     loading,
     login,
     register,
     logout,
+    refreshCurrentUser,
     isAuthenticated: !!user,
     isAdmin: user?.role === 'admin',
   };

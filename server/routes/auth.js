@@ -8,10 +8,10 @@ const router = express.Router();
 // Registro de usuario
 router.post('/register', async (req, res) => {
   try {
-    const { name, email, password } = req.body;
+    const { name, username, password } = req.body;
 
     // Validaciones
-    if (!name || !email || !password) {
+    if (!name || !username || !password) {
       return res.status(400).json({ error: 'Todos los campos son requeridos' });
     }
 
@@ -19,10 +19,10 @@ router.post('/register', async (req, res) => {
       return res.status(400).json({ error: 'La contraseña debe tener al menos 6 caracteres' });
     }
 
-    // Verificar si el email ya existe
-    const existingUser = await User.findOne({ email });
+    // Verificar si el username ya existe
+    const existingUser = await User.findOne({ username });
     if (existingUser) {
-      return res.status(400).json({ error: 'El email ya está registrado' });
+      return res.status(400).json({ error: 'El nombre de usuario ya está registrado' });
     }
 
     // Hash de la contraseña
@@ -31,13 +31,13 @@ router.post('/register', async (req, res) => {
     // Crear usuario
     const user = await User.create({
       name,
-      email,
+      username,
       password: hashedPassword
     });
 
     // Generar token
     const token = jwt.sign(
-      { id: user._id, email: user.email, name: user.name, role: user.role },
+      { id: user._id, username: user.username, name: user.name, role: user.role },
       process.env.JWT_SECRET,
       { expiresIn: '7d' }
     );
@@ -48,6 +48,7 @@ router.post('/register', async (req, res) => {
       user: {
         id: user._id,
         name: user.name,
+        username: user.username,
         email: user.email,
         role: user.role,
         approved: user.approved
@@ -62,14 +63,14 @@ router.post('/register', async (req, res) => {
 // Login
 router.post('/login', async (req, res) => {
   try {
-    const { email, password } = req.body;
+    const { username, password } = req.body;
 
-    if (!email || !password) {
-      return res.status(400).json({ error: 'Email y contraseña son requeridos' });
+    if (!username || !password) {
+      return res.status(400).json({ error: 'Nombre de usuario y contraseña son requeridos' });
     }
 
     // Buscar usuario
-    const user = await User.findOne({ email });
+    const user = await User.findOne({ username });
     if (!user) {
       return res.status(401).json({ error: 'Credenciales inválidas' });
     }
@@ -82,7 +83,7 @@ router.post('/login', async (req, res) => {
 
     // Generar token
     const token = jwt.sign(
-      { id: user._id, email: user.email, name: user.name, role: user.role },
+      { id: user._id, username: user.username, name: user.name, role: user.role },
       process.env.JWT_SECRET,
       { expiresIn: '7d' }
     );
@@ -93,6 +94,7 @@ router.post('/login', async (req, res) => {
       user: {
         id: user._id,
         name: user.name,
+        username: user.username,
         email: user.email,
         role: user.role,
         approved: user.approved
@@ -126,6 +128,48 @@ router.get('/me', async (req, res) => {
       name: user.name,
       email: user.email,
       role: user.role
+    });
+  } catch (error) {
+    res.status(403).json({ error: 'Token inválido' });
+  }
+});
+
+// Refrescar información del usuario y generar nuevo token
+router.get('/refresh', async (req, res) => {
+  const authHeader = req.headers['authorization'];
+  const token = authHeader && authHeader.split(' ')[1];
+
+  if (!token) {
+    return res.status(401).json({ error: 'Token no proporcionado' });
+  }
+
+  try {
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    const user = await User.findById(decoded.id).select('-password');
+
+    if (!user) {
+      return res.status(404).json({ error: 'Usuario no encontrado' });
+    }
+
+    // Generar nuevo token con información actualizada
+    const newToken = jwt.sign(
+      { id: user._id, username: user.username, name: user.name, role: user.role },
+      process.env.JWT_SECRET,
+      { expiresIn: '7d' }
+    );
+
+    res.json({
+      message: 'Usuario actualizado',
+      token: newToken,
+      user: {
+        id: user._id,
+        name: user.name,
+        username: user.username,
+        email: user.email,
+        role: user.role,
+        approved: user.approved,
+        badges: user.badges
+      }
     });
   } catch (error) {
     res.status(403).json({ error: 'Token inválido' });

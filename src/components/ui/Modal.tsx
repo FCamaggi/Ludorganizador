@@ -5,6 +5,8 @@
 
 import React, { useEffect, useRef } from 'react';
 import { X } from 'lucide-react';
+import { useTheme } from '../../contexts/ThemeContext';
+import { getTheme } from '../../constants';
 
 interface ModalProps {
   isOpen: boolean;
@@ -15,7 +17,7 @@ interface ModalProps {
 }
 
 /**
- * Modal reutilizable con cierre por ESC y backdrop
+ * Modal reutilizable con cierre por ESC, backdrop y soporte para tema oscuro
  */
 const Modal: React.FC<ModalProps> = ({
   isOpen,
@@ -24,6 +26,8 @@ const Modal: React.FC<ModalProps> = ({
   children,
   size = 'md',
 }) => {
+  const { theme: themeMode } = useTheme();
+  const theme = getTheme(themeMode === 'dark');
   const modalRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -54,19 +58,41 @@ const Modal: React.FC<ModalProps> = ({
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black bg-opacity-50 backdrop-blur-sm">
       <div
         ref={modalRef}
-        className={`bg-white rounded-xl shadow-2xl w-full ${sizes[size]} max-h-[90vh] overflow-y-auto`}
+        className={`rounded-xl shadow-2xl w-full ${sizes[size]} max-h-[90vh] overflow-y-auto`}
         role="dialog"
         aria-modal="true"
         aria-labelledby="modal-title"
+        style={{ backgroundColor: theme.bg.elevated }}
       >
-        <div className="flex items-center justify-between p-6 border-b border-gray-100 sticky top-0 bg-white z-10">
-          <h2 id="modal-title" className="text-xl font-bold text-gray-800">
+        <div
+          className="flex items-center justify-between p-6 border-b sticky top-0 z-10"
+          style={{
+            backgroundColor: theme.bg.elevated,
+            borderColor: theme.border.light,
+          }}
+        >
+          <h2
+            id="modal-title"
+            className="text-xl font-bold"
+            style={{ color: theme.text.primary }}
+          >
             {title}
           </h2>
           <button
             onClick={onClose}
-            className="p-2 text-gray-400 hover:text-gray-600 transition-colors rounded-full hover:bg-gray-100"
+            className="p-2 transition-colors rounded-full"
             aria-label="Cerrar modal"
+            style={{
+              color: theme.text.tertiary,
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.backgroundColor = theme.state.hover;
+              e.currentTarget.style.color = theme.text.secondary;
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.backgroundColor = 'transparent';
+              e.currentTarget.style.color = theme.text.tertiary;
+            }}
           >
             <X size={20} />
           </button>

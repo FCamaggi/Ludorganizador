@@ -3,6 +3,9 @@
  * @module constants
  */
 
+export * from './colors';
+export * from './theme';
+
 /**
  * Configuración de la API
  */
@@ -29,6 +32,7 @@ export const API_ROUTES = {
     LOGIN: '/auth/login',
     REGISTER: '/auth/register',
     VERIFY: '/auth/verify',
+    REFRESH: '/auth/refresh',
   },
   EVENTS: {
     BASE: '/events',

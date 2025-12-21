@@ -10,8 +10,13 @@ import {
   RotateCcw,
 } from 'lucide-react';
 import Button from '../ui/Button';
+import Input from '../ui/Input';
+import TextArea from '../ui/TextArea';
 import { CreateEventData, GameEvent } from '../../types';
 import { isValidTitle, isValidDescription } from '../../utils/validators';
+import { useTheme } from '../../contexts/ThemeContext';
+import { getTheme } from '../../constants';
+import { COLORS } from '../../constants/colors';
 
 interface EventFormProps {
   onSubmit: (data: CreateEventData) => void;
@@ -26,11 +31,14 @@ export const EventForm: React.FC<EventFormProps> = ({
   existingEvents = [],
   isLoading = false,
 }) => {
+  const { theme: themeMode } = useTheme();
+  const theme = getTheme(themeMode === 'dark');
   const [title, setTitle] = useState('');
   const [location, setLocation] = useState('');
   const [date, setDate] = useState('');
   const [description, setDescription] = useState('');
   const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
   const [selectedTemplate, setSelectedTemplate] = useState('');
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
 
@@ -77,6 +85,10 @@ export const EventForm: React.FC<EventFormProps> = ({
         'La descripción debe tener al menos 10 caracteres';
     }
 
+    if (password.trim() && password !== confirmPassword) {
+      newErrors.password = 'Las contraseñas no coinciden';
+    }
+
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -112,6 +124,7 @@ export const EventForm: React.FC<EventFormProps> = ({
     setDate('');
     setDescription('');
     setPassword('');
+    setConfirmPassword('');
     setErrors({});
     setShowMapPreview(false);
     setMapConfirmed(false);
@@ -145,7 +158,7 @@ export const EventForm: React.FC<EventFormProps> = ({
       {/* Selector de plantilla */}
       {existingEvents.length > 0 && (
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
+          <label className="block text-sm font-medium mb-2" style={{ color: theme.text.primary }}>
             <Copy size={16} className="inline mr-1" />
             Usar Plantilla (Opcional)
           </label>
@@ -157,7 +170,12 @@ export const EventForm: React.FC<EventFormProps> = ({
                 applyTemplate(e.target.value);
               }
             }}
-            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+            className="w-full px-4 py-3 rounded-lg border focus:ring-2 focus:ring-[#FC2F00] focus:border-[#FC2F00] outline-none transition-all"
+            style={{
+              backgroundColor: theme.bg.primary,
+              color: theme.text.primary,
+              borderColor: theme.border.medium,
+            }}
           >
             <option value="">-- Seleccionar evento para copiar --</option>
             {existingEvents.map((event) => (
@@ -166,34 +184,24 @@ export const EventForm: React.FC<EventFormProps> = ({
               </option>
             ))}
           </select>
-          <p className="text-xs text-gray-500 mt-1">
+          <p className="text-xs mt-1" style={{ color: theme.text.tertiary }}>
             Copiar título, ubicación y descripción de un evento existente
           </p>
         </div>
       )}
 
-      <div>
-        <label className="block text-sm font-medium text-gray-700 mb-2">
-          <Calendar size={16} className="inline mr-1" />
-          Título del Evento *
-        </label>
-        <input
-          type="text"
-          value={title}
-          onChange={(e) => setTitle(e.target.value)}
-          className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent ${
-            errors.title ? 'border-red-500' : 'border-gray-300'
-          }`}
-          placeholder="ej. Noche de Juegos de Mesa"
-          required
-        />
-        {errors.title && (
-          <p className="text-red-500 text-sm mt-1">{errors.title}</p>
-        )}
-      </div>
+      <Input
+        label="Título del Evento *"
+        icon={<Calendar size={16} />}
+        value={title}
+        onChange={(e) => setTitle(e.target.value)}
+        placeholder="ej. Noche de Juegos de Mesa"
+        error={errors.title}
+        required
+      />
 
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-2">
+        <label className="block text-sm font-medium mb-2" style={{ color: theme.text.primary }}>
           <MapPin size={16} className="inline mr-1" />
           Ubicación *
         </label>
@@ -205,9 +213,12 @@ export const EventForm: React.FC<EventFormProps> = ({
               setLocation(e.target.value);
               setMapConfirmed(false);
             }}
-            className={`flex-1 px-4 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent ${
-              errors.location ? 'border-red-500' : 'border-gray-300'
-            }`}
+            className={`flex-1 px-4 py-3 rounded-lg border focus:ring-2 focus:ring-[#FC2F00] focus:border-[#FC2F00] outline-none transition-all`}
+            style={{
+              backgroundColor: theme.bg.primary,
+              color: theme.text.primary,
+              borderColor: errors.location ? COLORS.accent.DEFAULT : theme.border.medium,
+            }}
             placeholder="ej. Casa de Juan, Calle Principal 123"
             required
           />
@@ -223,26 +234,27 @@ export const EventForm: React.FC<EventFormProps> = ({
             </Button>
           )}
           {mapConfirmed && includeMap && (
-            <div className="flex items-center gap-2 px-3 py-2 bg-green-50 border border-green-200 rounded-lg">
-              <Check size={18} className="text-green-600" />
-              <span className="text-sm text-green-700">Mapa confirmado</span>
+            <div className="flex items-center gap-2 px-3 py-2 rounded-lg" style={{ backgroundColor: `${COLORS.primary.DEFAULT}20`, borderColor: COLORS.primary.DEFAULT, borderWidth: 1 }}>
+              <Check size={18} style={{ color: COLORS.primary.DEFAULT }} />
+              <span className="text-sm" style={{ color: COLORS.primary.dark }}>Mapa confirmado</span>
             </div>
           )}
           {mapConfirmed && !includeMap && (
-            <div className="flex items-center gap-2 px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg">
-              <X size={18} className="text-gray-600" />
-              <span className="text-sm text-gray-700">Sin mapa</span>
+            <div className="flex items-center gap-2 px-3 py-2 rounded-lg border" style={{ backgroundColor: theme.bg.elevated, borderColor: theme.border.light }}>
+              <X size={18} style={{ color: theme.text.secondary }} />
+              <span className="text-sm" style={{ color: theme.text.secondary }}>Sin mapa</span>
             </div>
           )}
         </div>
         {errors.location && (
-          <p className="text-red-500 text-sm mt-1">{errors.location}</p>
+          <p className="text-sm mt-1" style={{ color: COLORS.accent.DEFAULT }}>{errors.location}</p>
         )}
         {mapConfirmed && (
           <button
             type="button"
             onClick={handleRetryLocation}
-            className="text-xs text-indigo-600 hover:text-indigo-800 mt-1 flex items-center gap-1"
+            className="text-xs mt-1 flex items-center gap-1 transition-colors"
+            style={{ color: COLORS.accent.DEFAULT }}
           >
             <RotateCcw size={12} />
             Cambiar configuración del mapa
@@ -253,14 +265,21 @@ export const EventForm: React.FC<EventFormProps> = ({
       {/* Map Preview Modal */}
       {showMapPreview && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-xl shadow-2xl max-w-3xl w-full max-h-[90vh] overflow-hidden">
-            <div className="p-4 border-b border-gray-200 flex justify-between items-center">
-              <h3 className="text-lg font-bold text-gray-900">
+          <div className="rounded-xl shadow-2xl max-w-3xl w-full max-h-[90vh] overflow-hidden" style={{ backgroundColor: theme.bg.primary }}>
+            <div className="p-4 border-b flex justify-between items-center" style={{ borderColor: theme.border.light }}>
+              <h3 className="text-lg font-bold" style={{ color: theme.text.primary }}>
                 Vista Previa del Mapa
               </h3>
               <button
                 onClick={() => setShowMapPreview(false)}
-                className="p-1 hover:bg-gray-100 rounded transition-colors"
+                className="p-1 rounded transition-colors"
+                style={{ color: theme.text.secondary }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.backgroundColor = theme.state.hover;
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.backgroundColor = 'transparent';
+                }}
               >
                 <X size={20} />
               </button>
@@ -268,16 +287,16 @@ export const EventForm: React.FC<EventFormProps> = ({
 
             <div className="p-4">
               <div className="mb-4">
-                <p className="text-sm text-gray-600 mb-2">
+                <p className="text-sm mb-2" style={{ color: theme.text.secondary }}>
                   Ubicación:{' '}
-                  <span className="font-medium text-gray-900">{location}</span>
+                  <span className="font-medium" style={{ color: theme.text.primary }}>{location}</span>
                 </p>
-                <p className="text-xs text-gray-500">
+                <p className="text-xs" style={{ color: theme.text.tertiary }}>
                   ¿El mapa muestra la ubicación correcta?
                 </p>
               </div>
 
-              <div className="aspect-video w-full rounded-lg overflow-hidden border-2 border-gray-200 mb-4">
+              <div className="aspect-video w-full rounded-lg overflow-hidden border-2 mb-4" style={{ borderColor: theme.border.medium }}>
                 <iframe
                   title="Map Preview"
                   width="100%"
@@ -313,14 +332,15 @@ export const EventForm: React.FC<EventFormProps> = ({
                   type="button"
                   variant="outline"
                   onClick={handleNoMap}
-                  className="flex items-center justify-center gap-2 text-gray-600"
+                  className="flex items-center justify-center gap-2"
+                  style={{ color: theme.text.secondary }}
                 >
                   <X size={18} />
                   No mostrar mapa
                 </Button>
               </div>
 
-              <p className="text-xs text-gray-500 mt-4 text-center">
+              <p className="text-xs mt-4 text-center" style={{ color: theme.text.tertiary }}>
                 Si el mapa no muestra la ubicación correcta, puedes cambiar la
                 descripción de la ubicación o elegir no mostrar el mapa para
                 evitar confusiones.
@@ -331,7 +351,7 @@ export const EventForm: React.FC<EventFormProps> = ({
       )}
 
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-2">
+        <label className="block text-sm font-medium mb-2" style={{ color: theme.text.primary }}>
           Fecha y Hora *
         </label>
         <input
@@ -339,36 +359,31 @@ export const EventForm: React.FC<EventFormProps> = ({
           value={date}
           onChange={(e) => setDate(e.target.value)}
           min={getMinDateTime()}
-          className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent ${
-            errors.date ? 'border-red-500' : 'border-gray-300'
-          }`}
+          className="w-full px-4 py-3 rounded-lg border focus:ring-2 focus:ring-[#FC2F00] focus:border-[#FC2F00] outline-none transition-all"
+          style={{
+            backgroundColor: theme.bg.primary,
+            color: theme.text.primary,
+            borderColor: errors.date ? COLORS.accent.DEFAULT : theme.border.medium,
+            colorScheme: themeMode === 'dark' ? 'dark' : 'light',
+          }}
           required
         />
         {errors.date && (
-          <p className="text-red-500 text-sm mt-1">{errors.date}</p>
+          <p className="text-sm mt-1" style={{ color: COLORS.accent.DEFAULT }}>{errors.date}</p>
         )}
       </div>
 
-      <div>
-        <label className="block text-sm font-medium text-gray-700 mb-2">
-          Descripción
-        </label>
-        <textarea
-          value={description}
-          onChange={(e) => setDescription(e.target.value)}
-          className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent ${
-            errors.description ? 'border-red-500' : 'border-gray-300'
-          }`}
-          placeholder="Descripción opcional del evento..."
-          rows={3}
-        />
-        {errors.description && (
-          <p className="text-red-500 text-sm mt-1">{errors.description}</p>
-        )}
-      </div>
+      <TextArea
+        label="Descripción"
+        value={description}
+        onChange={(e) => setDescription(e.target.value)}
+        placeholder="Descripción opcional del evento..."
+        rows={3}
+        error={errors.description}
+      />
 
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-2">
+        <label className="block text-sm font-medium mb-2" style={{ color: theme.text.primary }}>
           <Lock size={16} className="inline mr-1" />
           Contraseña (Opcional)
         </label>
@@ -377,14 +392,44 @@ export const EventForm: React.FC<EventFormProps> = ({
           value={password}
           onChange={(e) => setPassword(e.target.value)}
           autoComplete="new-password"
-          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+          className="w-full px-4 py-3 rounded-lg border focus:ring-2 focus:ring-[#FC2F00] focus:border-[#FC2F00] outline-none transition-all"
+          style={{
+            backgroundColor: theme.bg.primary,
+            color: theme.text.primary,
+            borderColor: errors.password ? COLORS.accent.DEFAULT : theme.border.medium,
+          }}
           placeholder="Dejar vacío para evento público"
         />
-        <p className="text-xs text-gray-500 mt-1">
+        <p className="text-xs mt-1" style={{ color: theme.text.tertiary }}>
           Si defines una contraseña, solo quienes la conozcan podrán ver los
           detalles del evento.
         </p>
       </div>
+
+      {password.trim() && (
+        <div>
+          <label className="block text-sm font-medium mb-2" style={{ color: theme.text.primary }}>
+            <Lock size={16} className="inline mr-1" />
+            Confirmar Contraseña
+          </label>
+          <input
+            type="password"
+            value={confirmPassword}
+            onChange={(e) => setConfirmPassword(e.target.value)}
+            autoComplete="new-password"
+            className="w-full px-4 py-3 rounded-lg border focus:ring-2 focus:ring-[#FC2F00] focus:border-[#FC2F00] outline-none transition-all"
+            style={{
+              backgroundColor: theme.bg.primary,
+              color: theme.text.primary,
+              borderColor: errors.password ? COLORS.accent.DEFAULT : theme.border.medium,
+            }}
+            placeholder="Repite la contraseña"
+          />
+          {errors.password && (
+            <p className="text-sm mt-1" style={{ color: COLORS.accent.DEFAULT }}>{errors.password}</p>
+          )}
+        </div>
+      )}
 
       <div className="flex gap-3 pt-4">
         <Button

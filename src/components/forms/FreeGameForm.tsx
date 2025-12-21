@@ -1,8 +1,13 @@
 import React, { useState } from 'react';
 import { Box, MessageSquare, Plus, Trash2 } from 'lucide-react';
 import Button from '../ui/Button';
+import Input from '../ui/Input';
+import TextArea from '../ui/TextArea';
 import { CreateFreeGameData } from '../../types';
 import { isValidTitle } from '../../utils/validators';
+import { useTheme } from '../../contexts/ThemeContext';
+import { getTheme } from '../../constants';
+import { COLORS } from '../../constants/colors';
 
 interface FreeGameFormProps {
   eventId: string;
@@ -22,6 +27,8 @@ export const FreeGameForm: React.FC<FreeGameFormProps> = ({
   onCancel,
   isLoading = false,
 }) => {
+  const { theme: themeMode } = useTheme();
+  const theme = getTheme(themeMode === 'dark');
   const [games, setGames] = useState<GameEntry[]>([{ name: '', note: '' }]);
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
 
@@ -90,61 +97,62 @@ export const FreeGameForm: React.FC<FreeGameFormProps> = ({
     <form onSubmit={handleSubmit} className="space-y-4">
       <div className="space-y-3">
         <div className="flex items-center justify-between">
-          <label className="block text-sm font-medium text-gray-700">
+          <label className="block text-sm font-medium" style={{ color: theme.text.primary }}>
             <Box size={16} className="inline mr-1" />
             Mis Juegos
           </label>
           <button
             type="button"
             onClick={addGame}
-            className="flex items-center gap-1 text-sm text-indigo-600 hover:text-indigo-800"
+            className="flex items-center gap-1 text-sm transition-colors"
+            style={{ color: COLORS.accent.DEFAULT }}
           >
             <Plus size={16} />
             Añadir otro juego
           </button>
         </div>
 
-        {errors.games && <p className="text-red-500 text-sm">{errors.games}</p>}
+        {errors.games && <p className="text-sm" style={{ color: COLORS.accent.DEFAULT }}>{errors.games}</p>}
 
         {games.map((game, index) => (
           <div
             key={index}
-            className="p-3 bg-gray-50 rounded-lg border border-gray-200"
+            className="p-3 rounded-lg border"
+            style={{
+              backgroundColor: theme.bg.elevated,
+              borderColor: theme.border.light,
+            }}
           >
             <div className="flex items-start gap-2 mb-2">
               <div className="flex-1">
-                <input
-                  type="text"
+                <Input
                   value={game.name}
                   onChange={(e) => updateGame(index, 'name', e.target.value)}
-                  className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent ${
-                    errors[`game_${index}`]
-                      ? 'border-red-500'
-                      : 'border-gray-300'
-                  }`}
                   placeholder={`Nombre del juego ${index + 1}`}
+                  error={errors[`game_${index}`]}
                 />
-                {errors[`game_${index}`] && (
-                  <p className="text-red-500 text-xs mt-1">
-                    {errors[`game_${index}`]}
-                  </p>
-                )}
               </div>
               {games.length > 1 && (
                 <button
                   type="button"
                   onClick={() => removeGame(index)}
-                  className="p-2 text-red-600 hover:bg-red-50 rounded transition-colors"
+                  className="p-2 rounded transition-colors mt-1"
+                  style={{ color: COLORS.accent.DEFAULT }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.backgroundColor = `${COLORS.accent.DEFAULT}10`;
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.backgroundColor = 'transparent';
+                  }}
                   title="Eliminar juego"
                 >
                   <Trash2 size={18} />
                 </button>
               )}
             </div>
-            <textarea
+            <TextArea
               value={game.note}
               onChange={(e) => updateGame(index, 'note', e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent text-sm"
               placeholder="Nota opcional (ej. expansiones, versión, etc.)"
               rows={2}
             />

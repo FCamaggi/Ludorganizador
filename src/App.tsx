@@ -1,5 +1,13 @@
 import React, { useState, useEffect } from 'react';
-import { Dice6, UserIcon as User, LogOut, Shield } from 'lucide-react';
+import {
+  Dice6,
+  UserIcon as User,
+  LogOut,
+  Shield,
+  RefreshCw,
+  Sun,
+  Moon,
+} from 'lucide-react';
 import { AuthUser, GameEvent, GameTable, FreeGame } from './types';
 import { useAuth } from './hooks/useAuth';
 import { useEvents } from './hooks/useEvents';
@@ -20,14 +28,20 @@ import {
   PasswordVerificationForm,
 } from './components/forms';
 import * as api from './services/apiService';
-import { API_CONFIG } from './constants';
+import { API_CONFIG, getTheme } from './constants';
+import { COLORS } from './constants/colors';
+import { useTheme } from './contexts/ThemeContext';
 
 type View = 'events' | 'detail';
 type Tab = 'tables' | 'free';
 
 const App: React.FC = () => {
+  // Theme
+  const { theme: themeMode, toggleTheme } = useTheme();
+  const theme = getTheme(themeMode === 'dark');
+
   // Authentication
-  const { user, logout } = useAuth();
+  const { user, logout, refreshCurrentUser } = useAuth();
 
   // View State
   const [view, setView] = useState<View>('events');
@@ -35,6 +49,7 @@ const App: React.FC = () => {
   const [activeTab, setActiveTab] = useState<Tab>('tables');
   const [archivedEventsCount, setArchivedEventsCount] = useState(0);
   const [pendingUsersCount, setPendingUsersCount] = useState(0);
+  const [isRefreshingUser, setIsRefreshingUser] = useState(false);
 
   // Custom Hooks
   const {
@@ -392,35 +407,70 @@ const App: React.FC = () => {
     : null;
 
   return (
-    <div className="min-h-screen bg-slate-50 text-gray-800 font-sans pb-20">
+    <div
+      className="min-h-screen font-sans pb-20 transition-colors duration-200"
+      style={{
+        backgroundColor: theme.bg.primary,
+        color: theme.text.primary,
+      }}
+    >
       {/* Header */}
-      <header className="bg-white sticky top-0 z-30 border-b border-gray-200 shadow-sm">
+      <header className="bg-gradient-to-r from-[#EC7D10] to-[#FC2F00] sticky top-0 z-30 shadow-md">
         <div className="max-w-5xl mx-auto px-4 py-4 flex justify-between items-center">
           <div
             className="flex items-center gap-2 cursor-pointer"
             onClick={handleBackToEvents}
           >
-            <div className="bg-indigo-600 text-white p-1.5 rounded-lg">
+            <div className="bg-white/20 backdrop-blur-sm text-white p-1.5 rounded-lg">
               <Dice6 size={24} />
             </div>
-            <span className="font-bold text-xl tracking-tight text-gray-900">
+            <span className="font-bold text-xl tracking-tight text-white">
               Ludorganizador
             </span>
           </div>
           <div className="flex items-center gap-4">
-            <div className="hidden sm:flex items-center gap-2 text-sm text-gray-600 bg-gray-100 px-3 py-1.5 rounded-full">
+            <div className="hidden sm:flex items-center gap-2 text-sm text-white bg-white/20 backdrop-blur-sm px-3 py-1.5 rounded-full">
               <User size={16} />
               <span className="font-medium">{user.name}</span>
             </div>
+            <button
+              onClick={toggleTheme}
+              className="text-white/80 hover:text-white transition-colors"
+              title={themeMode === 'dark' ? 'Modo claro' : 'Modo oscuro'}
+            >
+              {themeMode === 'dark' ? <Sun size={20} /> : <Moon size={20} />}
+            </button>
+            <button
+              onClick={async () => {
+                setIsRefreshingUser(true);
+                try {
+                  await refreshCurrentUser();
+                  showToast('Usuario actualizado', 'success');
+                } catch (error) {
+                  console.error('Error al refrescar usuario:', error);
+                  showToast('Error al actualizar usuario', 'error');
+                } finally {
+                  setIsRefreshingUser(false);
+                }
+              }}
+              disabled={isRefreshingUser}
+              className="text-white/80 hover:text-white transition-colors disabled:opacity-50"
+              title="Actualizar información de usuario"
+            >
+              <RefreshCw
+                size={18}
+                className={isRefreshingUser ? 'animate-spin' : ''}
+              />
+            </button>
             {user.role === 'admin' && (
               <button
                 onClick={() => setIsAdminPanelOpen(true)}
-                className="text-gray-400 hover:text-indigo-600 transition-colors relative"
+                className="text-white/80 hover:text-white transition-colors relative"
                 title="Panel de Administración"
               >
                 <Shield size={20} />
                 {archivedEventsCount > 0 && (
-                  <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-4 h-4 flex items-center justify-center font-bold">
+                  <span className="absolute -top-1 -right-1 bg-[#C200FB] text-white text-xs rounded-full w-4 h-4 flex items-center justify-center font-bold">
                     !
                   </span>
                 )}
@@ -428,7 +478,7 @@ const App: React.FC = () => {
             )}
             <button
               onClick={handleLogout}
-              className="text-gray-400 hover:text-red-500 transition-colors"
+              className="text-white/80 hover:text-white transition-colors"
             >
               <LogOut size={20} />
             </button>
@@ -439,33 +489,60 @@ const App: React.FC = () => {
       {/* Main Content */}
       <main className="max-w-5xl mx-auto px-4 py-8 pb-16">
         {user.role === 'nuevo' && (
-          <div className="mb-6 bg-amber-50 border-l-4 border-amber-500 p-4 rounded">
+          <div
+            className="mb-6 border-l-4 p-4 rounded"
+            style={{
+              backgroundColor:
+                themeMode === 'dark'
+                  ? 'rgba(255, 188, 10, 0.1)'
+                  : 'rgba(255, 188, 10, 0.2)',
+              borderLeftColor: theme.primary,
+            }}
+          >
             <div className="flex">
               <div className="flex-shrink-0">
-                <svg className="h-5 w-5 text-amber-400" viewBox="0 0 20 20" fill="currentColor">
-                  <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                <svg
+                  className="h-5 w-5"
+                  style={{ color: theme.primary }}
+                  viewBox="0 0 20 20"
+                  fill="currentColor"
+                >
+                  <path
+                    fillRule="evenodd"
+                    d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z"
+                    clipRule="evenodd"
+                  />
                 </svg>
               </div>
               <div className="ml-3">
-                <p className="text-sm text-amber-700">
-                  <span className="font-medium">Cuenta pendiente de aprobación:</span> Tu cuenta ha sido registrada y está en la lista de espera. Un administrador la revisará y aprobará pronto. Una vez aprobada, podrás crear eventos y mesas.
+                <p className="text-sm" style={{ color: theme.text.primary }}>
+                  <span className="font-medium">
+                    Cuenta pendiente de aprobación:
+                  </span>{' '}
+                  Tu cuenta ha sido registrada y está en la lista de espera. Un
+                  administrador la revisará y aprobará pronto. Una vez aprobada,
+                  podrás crear eventos y mesas.
                 </p>
               </div>
             </div>
           </div>
         )}
-        
+
         {view === 'events' && (
           <EventsView
             events={events}
             onEventClick={handleEventClick}
             onCreateEvent={() => {
               if (user.role === 'nuevo') {
-                showToast('Debes esperar a que un administrador apruebe tu cuenta', 'error');
+                showToast(
+                  'Debes esperar a que un administrador apruebe tu cuenta',
+                  'error'
+                );
                 return;
               }
               setIsEventModalOpen(true);
             }}
+            onRefresh={loadEvents}
             isLoading={eventsLoading}
           />
         )}
@@ -481,7 +558,10 @@ const App: React.FC = () => {
             onBack={handleBackToEvents}
             onCreateTable={() => {
               if (user.role === 'nuevo') {
-                showToast('Debes esperar a que un administrador apruebe tu cuenta', 'error');
+                showToast(
+                  'Debes esperar a que un administrador apruebe tu cuenta',
+                  'error'
+                );
                 return;
               }
               setIsTableModalOpen(true);
@@ -491,7 +571,10 @@ const App: React.FC = () => {
             onDeleteTable={handleDeleteTable}
             onAddFreeGame={() => {
               if (user.role === 'nuevo') {
-                showToast('Debes esperar a que un administrador apruebe tu cuenta', 'error');
+                showToast(
+                  'Debes esperar a que un administrador apruebe tu cuenta',
+                  'error'
+                );
                 return;
               }
               setIsFreeGameModalOpen(true);
@@ -500,16 +583,23 @@ const App: React.FC = () => {
             onDeleteIndividualGame={handleDeleteIndividualGame}
             onDeleteEvent={handleDeleteEvent}
             onArchiveEvent={handleArchiveEvent}
+            onRefreshTables={() => loadTables(activeEventId!)}
+            onRefreshFreeGames={() => loadFreeGames(activeEventId!)}
             isLoading={tablesLoading || gamesLoading}
           />
         )}
       </main>
 
       {/* Footer */}
-      <footer className="fixed bottom-0 left-0 right-0 bg-gradient-to-t from-slate-100 to-transparent py-3 text-center">
-        <p className="text-xs text-gray-500">
-          Desarrollado con <span className="text-red-500">❤️</span> por{' '}
-          <span className="font-medium text-gray-700">Fabrizio Camaggi</span>
+      <footer 
+        className="fixed bottom-0 left-0 right-0 py-3 text-center"
+        style={{
+          background: `linear-gradient(to top, ${theme.bg.primary}, transparent)`,
+        }}
+      >
+        <p className="text-xs" style={{ color: theme.text.tertiary }}>
+          Desarrollado con <span style={{ color: COLORS.accent.DEFAULT }}>❤️</span> por{' '}
+          <span className="font-medium" style={{ color: theme.text.secondary }}>Fabrizio Camaggi</span>
         </p>
       </footer>
 
@@ -597,6 +687,14 @@ const App: React.FC = () => {
               }
             }}
             showToast={showToast}
+            onUserUpdate={async () => {
+              try {
+                await refreshCurrentUser();
+                showToast('Usuario actualizado', 'info');
+              } catch (error) {
+                console.error('Error al refrescar usuario:', error);
+              }
+            }}
           />
         </Modal>
       )}

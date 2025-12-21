@@ -75,7 +75,7 @@ const handleResponse = async <T>(response: Response): Promise<T> => {
  */
 export const register = async (
   name: string,
-  email: string,
+  username: string,
   password: string
 ): Promise<AuthUser> => {
   const response = await fetch(
@@ -83,7 +83,7 @@ export const register = async (
     {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ name, email, password }),
+      body: JSON.stringify({ name, username, password }),
     }
   );
 
@@ -94,10 +94,10 @@ export const register = async (
 };
 
 /**
- * Inicia sesión con email y contraseña
+ * Inicia sesión con username y contraseña
  */
 export const login = async (
-  email: string,
+  username: string,
   password: string
 ): Promise<AuthUser> => {
   const response = await fetch(
@@ -105,7 +105,7 @@ export const login = async (
     {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email, password }),
+      body: JSON.stringify({ username, password }),
     }
   );
 
@@ -121,6 +121,23 @@ export const login = async (
 export const getCurrentUser = (): AuthUser | null => {
   const userData = localStorage.getItem(STORAGE_KEYS.AUTH_USER);
   return userData ? JSON.parse(userData) : null;
+};
+
+/**
+ * Refresca la información del usuario desde el servidor
+ */
+export const refreshUser = async (): Promise<AuthUser> => {
+  const response = await fetch(
+    `${API_CONFIG.BASE_URL}${API_ROUTES.AUTH.REFRESH}`,
+    {
+      headers: authHeaders(),
+    }
+  );
+
+  const data = await handleResponse<{ user: any; token: string }>(response);
+  const authUser: AuthUser = { ...data.user, token: data.token };
+  localStorage.setItem(STORAGE_KEYS.AUTH_USER, JSON.stringify(authUser));
+  return authUser;
 };
 
 /**
@@ -373,12 +390,9 @@ export const updateFreeGame = async (
  * Obtiene usuarios pendientes de aprobación
  */
 export const getPendingUsers = async (): Promise<any[]> => {
-  const response = await fetch(
-    `${API_CONFIG.BASE_URL}/admin/pending-users`,
-    {
-      headers: authHeaders(),
-    }
-  );
+  const response = await fetch(`${API_CONFIG.BASE_URL}/admin/pending-users`, {
+    headers: authHeaders(),
+  });
   return handleResponse<any[]>(response);
 };
 
@@ -395,4 +409,3 @@ export const approveUser = async (userId: string): Promise<void> => {
   );
   await handleResponse<void>(response);
 };
-

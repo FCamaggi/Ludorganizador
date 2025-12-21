@@ -9,7 +9,10 @@ import { useState, useEffect } from 'react';
  * Hook que retorna true después de un delay si loading sigue siendo true
  * Útil para mostrar mensajes de "cargando..." solo después de un cierto tiempo
  */
-export const useLoadingWithDelay = (loading: boolean, delay: number = 3000): boolean => {
+export const useLoadingWithDelay = (
+  loading: boolean,
+  delay: number = 3000
+): boolean => {
   const [showDelayed, setShowDelayed] = useState(false);
 
   useEffect(() => {

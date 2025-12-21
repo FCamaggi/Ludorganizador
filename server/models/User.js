@@ -6,10 +6,18 @@ const userSchema = new mongoose.Schema({
     required: true,
     trim: true
   },
-  email: {
+  username: {
     type: String,
     required: true,
     unique: true,
+    lowercase: true,
+    trim: true
+  },
+  email: {
+    type: String,
+    required: false,
+    unique: false,
+    sparse: true, // Permite múltiples valores null
     lowercase: true,
     trim: true
   },
@@ -37,7 +45,7 @@ const userSchema = new mongoose.Schema({
   }
 });
 
-// El índice de email ya se crea automáticamente con unique: true
+// El índice de username ya se crea automáticamente con unique: true
 // No es necesario declararlo manualmente
 
 const User = mongoose.model('User', userSchema);

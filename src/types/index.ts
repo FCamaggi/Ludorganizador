@@ -9,7 +9,8 @@
 export interface User {
   id: string;
   name: string;
-  email: string;
+  username: string;
+  email?: string;
   role?: 'nuevo' | 'user' | 'admin';
   badges?: string[];
   approved?: boolean; // Si fue aprobado por un admin (solo para rol 'nuevo')
@@ -111,7 +112,7 @@ export interface CreateFreeGameData {
  * Credenciales de login
  */
 export interface LoginCredentials {
-  email: string;
+  username: string;
   password: string;
 }
 
@@ -120,6 +121,7 @@ export interface LoginCredentials {
  */
 export interface RegisterData {
   name: string;
-  email: string;
+  username: string;
   password: string;
+  confirmPassword: string;
 }

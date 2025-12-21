@@ -9,11 +9,15 @@ import {
   Archive,
   Award,
   Edit3,
+  RefreshCw,
 } from 'lucide-react';
 import { GameEvent, GameTable, FreeGame, AuthUser } from '../../types';
 import GameTableCard from '../tables/GameTableCard';
 import Button from '../ui/Button';
+import Tooltip from '../ui/Tooltip';
 import { formatEventDate } from '../../utils/dateUtils';
+import { useTheme } from '../../contexts/ThemeContext';
+import { getTheme, COLORS } from '../../constants';
 
 interface EventDetailViewProps {
   event: GameEvent;
@@ -29,9 +33,15 @@ interface EventDetailViewProps {
   onDeleteTable: (table: GameTable) => void;
   onAddFreeGame: () => void;
   onDeleteFreeGame: (game: FreeGame) => void;
-  onDeleteIndividualGame: (gameListId: string, gameIndex: number, gameName: string) => void;
+  onDeleteIndividualGame: (
+    gameListId: string,
+    gameIndex: number,
+    gameName: string
+  ) => void;
   onDeleteEvent: (event: GameEvent) => void;
   onArchiveEvent: (event: GameEvent) => void;
+  onRefreshTables: () => void;
+  onRefreshFreeGames: () => void;
   isLoading?: boolean;
 }
 
@@ -52,8 +62,12 @@ export const EventDetailView: React.FC<EventDetailViewProps> = ({
   onDeleteIndividualGame,
   onDeleteEvent,
   onArchiveEvent,
+  onRefreshTables,
+  onRefreshFreeGames,
   isLoading = false,
 }) => {
+  const { theme: themeMode } = useTheme();
+  const theme = getTheme(themeMode === 'dark');
   const isAdmin = currentUser.role === 'admin';
   const canDeleteEvent =
     isAdmin || (event.creatorId && event.creatorId === currentUser.id);
@@ -63,13 +77,14 @@ export const EventDetailView: React.FC<EventDetailViewProps> = ({
       {/* Breadcrumb / Back */}
       <button
         onClick={onBack}
-        className="mb-6 text-sm text-indigo-600 hover:text-indigo-800 font-medium flex items-center gap-1"
+        className="mb-6 text-sm font-medium flex items-center gap-1"
+        style={{ color: COLORS.accent.DEFAULT }}
       >
         &larr; Volver a Eventos
       </button>
 
       {/* Event Details Card */}
-      <div className="bg-gradient-to-r from-indigo-500 to-purple-600 rounded-xl shadow-lg p-6 mb-8 text-white">
+      <div className="bg-gradient-to-r from-[#EC7D10] to-[#FC2F00] rounded-xl shadow-lg p-6 mb-8 text-white">
         <div className="flex items-start justify-between">
           <div className="flex-1">
             <h1 className="text-3xl font-bold mb-2">{event.title}</h1>
@@ -139,7 +154,7 @@ export const EventDetailView: React.FC<EventDetailViewProps> = ({
           onClick={() => onTabChange('tables')}
           className={`px-6 py-3 font-medium transition-colors relative ${
             activeTab === 'tables'
-              ? 'text-indigo-600 border-b-2 border-indigo-600'
+              ? 'text-[#FC2F00] border-b-2 border-[#FC2F00]'
               : 'text-gray-500 hover:text-gray-700'
           }`}
         >
@@ -149,7 +164,7 @@ export const EventDetailView: React.FC<EventDetailViewProps> = ({
           onClick={() => onTabChange('free')}
           className={`px-6 py-3 font-medium transition-colors relative ${
             activeTab === 'free'
-              ? 'text-indigo-600 border-b-2 border-indigo-600'
+              ? 'text-[#FC2F00] border-b-2 border-[#FC2F00]'
               : 'text-gray-500 hover:text-gray-700'
           }`}
         >
@@ -161,11 +176,32 @@ export const EventDetailView: React.FC<EventDetailViewProps> = ({
       {activeTab === 'tables' && (
         <div>
           <div className="flex justify-between items-center mb-6">
-            <h2 className="text-2xl font-bold text-gray-900">Mesas de Juego</h2>
-            <Button onClick={onCreateTable} disabled={isLoading}>
-              <Plus size={20} />
-              <span className="hidden sm:inline">Nueva Mesa</span>
-            </Button>
+            <div className="flex items-center gap-2">
+              <h2 
+                className="text-2xl font-bold"
+                style={{ color: theme.text.primary }}
+              >
+                Mesas de Juego
+              </h2>
+              <Tooltip content="Una mesa de juego es un espacio donde un anfitrión propone jugar un juego específico. Otros jugadores pueden unirse hasta completar los lugares disponibles." />
+            </div>
+            <div className="flex gap-2">
+              <button
+                onClick={onRefreshTables}
+                disabled={isLoading}
+                className="p-2 text-gray-600 hover:text-[#FC2F00] hover:bg-gray-100 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                title="Actualizar mesas"
+              >
+                <RefreshCw
+                  size={20}
+                  className={isLoading ? 'animate-spin' : ''}
+                />
+              </button>
+              <Button onClick={onCreateTable} disabled={isLoading}>
+                <Plus size={20} />
+                <span className="hidden sm:inline">Nueva Mesa</span>
+              </Button>
+            </div>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -203,17 +239,39 @@ export const EventDetailView: React.FC<EventDetailViewProps> = ({
         <div>
           <div className="flex justify-between items-center mb-6">
             <div>
-              <h2 className="text-2xl font-bold text-gray-900">
-                Juegos Libres
-              </h2>
-              <p className="text-sm text-gray-500 mt-1">
+              <div className="flex items-center gap-2">
+                <h2 
+                  className="text-2xl font-bold"
+                  style={{ color: theme.text.primary }}
+                >
+                  Juegos Libres
+                </h2>
+                <Tooltip content="Una ludoteca o lista de juegos libres es una colección de juegos que traes al evento. No se asignan a una mesa específica, pero están disponibles para partidas espontáneas." />
+              </div>
+              <p 
+                className="text-sm mt-1"
+                style={{ color: theme.text.secondary }}
+              >
                 Juegos sin mesa asignada para partidas espontáneas
               </p>
             </div>
-            <Button onClick={onAddFreeGame} disabled={isLoading}>
-              <Plus size={20} />
-              <span className="hidden sm:inline">Agregar mis Juegos</span>
-            </Button>
+            <div className="flex gap-2">
+              <button
+                onClick={onRefreshFreeGames}
+                disabled={isLoading}
+                className="p-2 text-gray-600 hover:text-[#FC2F00] hover:bg-gray-100 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                title="Actualizar juegos libres"
+              >
+                <RefreshCw
+                  size={20}
+                  className={isLoading ? 'animate-spin' : ''}
+                />
+              </button>
+              <Button onClick={onAddFreeGame} disabled={isLoading}>
+                <Plus size={20} />
+                <span className="hidden sm:inline">Agregar mis Juegos</span>
+              </Button>
+            </div>
           </div>
 
           <div className="grid grid-cols-1 gap-4">
@@ -223,16 +281,26 @@ export const EventDetailView: React.FC<EventDetailViewProps> = ({
               return (
                 <div
                   key={gameList.id}
-                  className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 hover:shadow-md transition-shadow"
+                  className="rounded-lg shadow-sm border p-4 hover:shadow-md transition-shadow"
+                  style={{
+                    backgroundColor: theme.bg.elevated,
+                    borderColor: theme.border.light,
+                  }}
                 >
                   <div className="flex items-start justify-between mb-3">
                     <div className="flex items-center gap-2">
-                      <Box size={20} className="text-indigo-500" />
-                      <h3 className="font-bold text-gray-800">
+                      <Box 
+                        size={20} 
+                        style={{ color: theme.secondary }}
+                      />
+                      <h3 
+                        className="font-bold"
+                        style={{ color: theme.text.primary }}
+                      >
                         {gameList.ownerName}
                       </h3>
                       {gameList.ownerRole === 'admin' && (
-                        <span className="text-xs px-2 py-0.5 rounded bg-indigo-100 text-indigo-800 flex items-center gap-1">
+                        <span className="text-xs px-2 py-0.5 rounded bg-[#EC0868]/20 text-[#EC0868] flex items-center gap-1">
                           <Award size={12} />
                           Admin
                         </span>
@@ -247,24 +315,24 @@ export const EventDetailView: React.FC<EventDetailViewProps> = ({
                               > = {
                                 veterano: {
                                   label: 'Veterano',
-                                  color: 'bg-purple-100 text-purple-800',
+                                  color: 'bg-[#C200FB]/20 text-[#C200FB]',
                                 },
                                 vip: {
                                   label: 'VIP',
-                                  color: 'bg-yellow-100 text-yellow-800',
+                                  color: 'bg-[#FFBC0A]/20 text-[#FFBC0A]',
                                 },
                                 organizador: {
                                   label: 'Organizador',
-                                  color: 'bg-blue-100 text-blue-800',
+                                  color: 'bg-[#EC7D10]/20 text-[#EC7D10]',
                                 },
                                 fundador: {
                                   label: 'Fundador',
-                                  color: 'bg-green-100 text-green-800',
+                                  color: 'bg-[#EC0868]/20 text-[#EC0868]',
                                 },
                               };
                               const config = badgeConfig[badge] || {
                                 label: badge,
-                                color: 'bg-gray-100 text-gray-800',
+                                color: 'bg-gray-500/20 text-gray-500',
                               };
                               return (
                                 <span
@@ -282,7 +350,14 @@ export const EventDetailView: React.FC<EventDetailViewProps> = ({
                     {canEdit && (
                       <button
                         onClick={() => onDeleteFreeGame(gameList)}
-                        className="text-gray-400 hover:text-red-500 transition-colors p-1"
+                        className="transition-colors p-1"
+                        style={{ color: theme.text.tertiary }}
+                        onMouseEnter={(e) => {
+                        e.currentTarget.style.color = COLORS.accent.DEFAULT;
+                        }}
+                        onMouseLeave={(e) => {
+                          e.currentTarget.style.color = theme.text.tertiary;
+                        }}
                         title="Eliminar lista de juegos"
                       >
                         <Trash2 size={18} />
@@ -294,21 +369,49 @@ export const EventDetailView: React.FC<EventDetailViewProps> = ({
                     {gameList.games.map((game, idx) => (
                       <div
                         key={idx}
-                        className="bg-gray-50 rounded p-3 border border-gray-100 group relative"
+                        className="rounded p-3 border group relative"
+                        style={{
+                          backgroundColor: theme.bg.tertiary,
+                          borderColor: theme.border.light,
+                        }}
                       >
                         <div className="flex items-start justify-between gap-2">
                           <div className="flex-1">
-                            <p className="font-medium text-gray-900">{game.name}</p>
+                            <p 
+                              className="font-medium"
+                              style={{ color: theme.text.primary }}
+                            >
+                              {game.name}
+                            </p>
                             {game.note && (
-                              <p className="text-sm text-gray-600 italic mt-1">
+                              <p 
+                                className="text-sm italic mt-1"
+                                style={{ color: theme.text.secondary }}
+                              >
                                 "{game.note}"
                               </p>
                             )}
                           </div>
                           {canEdit && (
                             <button
-                              onClick={() => onDeleteIndividualGame(gameList.id, idx, game.name)}
-                              className="opacity-0 group-hover:opacity-100 transition-opacity p-1 text-red-500 hover:bg-red-50 rounded"
+                              onClick={() =>
+                                onDeleteIndividualGame(
+                                  gameList.id,
+                                  idx,
+                                  game.name
+                                )
+                              }
+                              className="opacity-0 group-hover:opacity-100 transition-opacity p-1 rounded"
+                              style={{ 
+                                color: COLORS.accent.DEFAULT,
+                                backgroundColor: 'transparent',
+                              }}
+                              onMouseEnter={(e) => {
+                                e.currentTarget.style.backgroundColor = `${COLORS.accent.DEFAULT}10`;
+                              }}
+                              onMouseLeave={(e) => {
+                                e.currentTarget.style.backgroundColor = 'transparent';
+                              }}
                               title="Eliminar este juego"
                             >
                               <Trash2 size={16} />
@@ -319,7 +422,10 @@ export const EventDetailView: React.FC<EventDetailViewProps> = ({
                     ))}
                   </div>
 
-                  <p className="text-xs text-gray-400 mt-3">
+                  <p 
+                    className="text-xs mt-3"
+                    style={{ color: theme.text.tertiary }}
+                  >
                     {gameList.games.length} juego
                     {gameList.games.length !== 1 ? 's' : ''} disponible
                     {gameList.games.length !== 1 ? 's' : ''}

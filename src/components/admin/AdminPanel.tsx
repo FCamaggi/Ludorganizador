@@ -20,6 +20,7 @@ interface AdminPanelProps {
   onClose: () => void;
   onEventChange: () => void;
   showToast: (message: string, type: 'success' | 'error' | 'info') => void;
+  onUserUpdate?: () => void;
 }
 
 interface Stats {
@@ -40,6 +41,7 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
   onClose,
   onEventChange,
   showToast,
+  onUserUpdate,
 }) => {
   const [activeTab, setActiveTab] = useState<
     'users' | 'events' | 'archived' | 'stats' | 'pending'
@@ -198,7 +200,9 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
         const error = await res.json();
         console.error('Error al cargar usuarios pendientes:', error);
         showToast(
-          `Error: ${error.error || 'No se pudieron cargar los usuarios pendientes'}`,
+          `Error: ${
+            error.error || 'No se pudieron cargar los usuarios pendientes'
+          }`,
           'error'
         );
       }
@@ -298,17 +302,25 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
         setUsers((prev) =>
           prev.map((u) => (u.id === userId ? { ...u, role: newRole } : u))
         );
-        
+
         let message = '';
         if (newRole === 'admin') {
           message = 'Usuario promovido a administrador';
         } else if (newRole === 'user') {
-          message = currentRole === 'admin' ? 'Usuario removido de administrador' : 'Usuario aprobado';
+          message =
+            currentRole === 'admin'
+              ? 'Usuario removido de administrador'
+              : 'Usuario aprobado';
         } else if (newRole === 'nuevo') {
           message = 'Usuario marcado como pendiente';
         }
-        
+
         showToast(message, 'success');
+
+        // Si se cambió el rol del usuario actual, refrescar
+        if (userId === currentUserId && onUserUpdate) {
+          onUserUpdate();
+        }
       } else {
         const error = await res.json();
         showToast(error.error || 'Error al cambiar rol', 'error');
@@ -361,6 +373,11 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
         setPendingUsers((prev) => prev.filter((u) => u.id !== userId));
         loadStats();
         showToast('Usuario aprobado correctamente', 'success');
+
+        // Si se aprobó al usuario actual, refrescar
+        if (userId === currentUserId && onUserUpdate) {
+          onUserUpdate();
+        }
       } else {
         const error = await res.json();
         showToast(error.error || 'Error al aprobar usuario', 'error');
@@ -478,9 +495,13 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
           <div className="bg-amber-50 p-4 rounded-lg">
             <div className="flex items-center gap-2 mb-2">
               <AlertTriangle className="text-amber-600" size={24} />
-              <h3 className="font-semibold text-gray-700">Solicitudes Pendientes</h3>
+              <h3 className="font-semibold text-gray-700">
+                Solicitudes Pendientes
+              </h3>
             </div>
-            <p className="text-3xl font-bold text-amber-600">{stats.pendingUsers}</p>
+            <p className="text-3xl font-bold text-amber-600">
+              {stats.pendingUsers}
+            </p>
           </div>
           <div className="bg-green-50 p-4 rounded-lg">
             <div className="flex items-center gap-2 mb-2">
@@ -508,62 +529,67 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
         <div className="space-y-4">
           <div className="bg-blue-50 border-l-4 border-blue-500 p-4 rounded">
             <p className="text-sm text-blue-700">
-              <span className="font-medium">Aprobar usuarios:</span> Los nuevos usuarios se registran con rol "nuevo" y no pueden crear eventos ni mesas. Al aprobarlos, su rol cambia a "user" y obtienen acceso completo. Puedes cambiar el rol de cualquier usuario desde la pestaña de Usuarios.
+              <span className="font-medium">Aprobar usuarios:</span> Los nuevos
+              usuarios se registran con rol "nuevo" y no pueden crear eventos ni
+              mesas. Al aprobarlos, su rol cambia a "user" y obtienen acceso
+              completo. Puedes cambiar el rol de cualquier usuario desde la
+              pestaña de Usuarios.
             </p>
           </div>
           <div className="space-y-2">
-          {loading ? (
-            <p className="text-center text-gray-500">Cargando...</p>
-          ) : pendingUsers.length === 0 ? (
-            <div className="text-center py-8 text-gray-500">
-              <Users size={48} className="mx-auto mb-4 opacity-20" />
-              <p>No hay usuarios pendientes de aprobación</p>
-            </div>
-          ) : (
-            pendingUsers.map((user) => (
-              <div
-                key={user.id}
-                className="p-4 bg-amber-50 rounded-lg border border-amber-200"
-              >
-                <div className="flex items-start justify-between mb-2">
-                  <div className="flex-1">
-                    <div className="flex items-center gap-2 mb-1">
-                      <p className="font-medium">{user.name}</p>
-                      <span className="flex items-center gap-1 text-xs bg-amber-100 text-amber-800 px-2 py-1 rounded">
-                        <AlertTriangle size={12} />
-                        Pendiente
-                      </span>
+            {loading ? (
+              <p className="text-center text-gray-500">Cargando...</p>
+            ) : pendingUsers.length === 0 ? (
+              <div className="text-center py-8 text-gray-500">
+                <Users size={48} className="mx-auto mb-4 opacity-20" />
+                <p>No hay usuarios pendientes de aprobación</p>
+              </div>
+            ) : (
+              pendingUsers.map((user) => (
+                <div
+                  key={user.id}
+                  className="p-4 bg-amber-50 rounded-lg border border-amber-200"
+                >
+                  <div className="flex items-start justify-between mb-2">
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2 mb-1">
+                        <p className="font-medium">{user.name}</p>
+                        <span className="flex items-center gap-1 text-xs bg-amber-100 text-amber-800 px-2 py-1 rounded">
+                          <AlertTriangle size={12} />
+                          Pendiente
+                        </span>
+                      </div>
+                      <p className="text-sm text-gray-500 mb-1">{user.email}</p>
+                      <p className="text-xs text-gray-400">
+                        Registrado:{' '}
+                        {new Date(user.createdAt).toLocaleDateString()}
+                      </p>
                     </div>
-                    <p className="text-sm text-gray-500 mb-1">{user.email}</p>
-                    <p className="text-xs text-gray-400">
-                      Registrado: {new Date(user.createdAt).toLocaleDateString()}
-                    </p>
-                  </div>
-                  <div className="flex gap-2">
-                    <button
-                      onClick={() => handleApproveUser(user.id)}
-                      className="px-3 py-1.5 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors text-sm font-medium"
-                    >
-                      Aprobar
-                    </button>
-                    <button
-                      onClick={() =>
-                        setDeleteModal({
-                          type: 'user',
-                          id: user.id,
-                          name: user.name,
-                        })
-                      }
-                      className="p-1.5 text-red-500 hover:bg-red-50 rounded transition-colors"
-                      title="Rechazar solicitud"
-                    >
-                      <Trash2 size={18} />
-                    </button>
+                    <div className="flex gap-2">
+                      <button
+                        onClick={() => handleApproveUser(user.id)}
+                        className="px-3 py-1.5 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors text-sm font-medium"
+                      >
+                        Aprobar
+                      </button>
+                      <button
+                        onClick={() =>
+                          setDeleteModal({
+                            type: 'user',
+                            id: user.id,
+                            name: user.name,
+                          })
+                        }
+                        className="p-1.5 text-red-500 hover:bg-red-50 rounded transition-colors"
+                        title="Rechazar solicitud"
+                      >
+                        <Trash2 size={18} />
+                      </button>
+                    </div>
                   </div>
                 </div>
-              </div>
-            ))
-          )}
+              ))
+            )}
           </div>
         </div>
       )}

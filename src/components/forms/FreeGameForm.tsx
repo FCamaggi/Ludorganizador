@@ -97,7 +97,10 @@ export const FreeGameForm: React.FC<FreeGameFormProps> = ({
     <form onSubmit={handleSubmit} className="space-y-4">
       <div className="space-y-3">
         <div className="flex items-center justify-between">
-          <label className="block text-sm font-medium" style={{ color: theme.text.primary }}>
+          <label
+            className="block text-sm font-medium"
+            style={{ color: theme.text.primary }}
+          >
             <Box size={16} className="inline mr-1" />
             Mis Juegos
           </label>
@@ -112,7 +115,11 @@ export const FreeGameForm: React.FC<FreeGameFormProps> = ({
           </button>
         </div>
 
-        {errors.games && <p className="text-sm" style={{ color: COLORS.accent.DEFAULT }}>{errors.games}</p>}
+        {errors.games && (
+          <p className="text-sm" style={{ color: COLORS.accent.DEFAULT }}>
+            {errors.games}
+          </p>
+        )}
 
         {games.map((game, index) => (
           <div

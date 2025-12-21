@@ -12,12 +12,9 @@ interface PasswordVerificationFormProps {
   isLoading?: boolean;
 }
 
-export const PasswordVerificationForm: React.FC<PasswordVerificationFormProps> = ({ 
-  onSubmit, 
-  onCancel, 
-  error,
-  isLoading = false 
-}) => {
+export const PasswordVerificationForm: React.FC<
+  PasswordVerificationFormProps
+> = ({ onSubmit, onCancel, error, isLoading = false }) => {
   const { theme: themeMode } = useTheme();
   const theme = getTheme(themeMode === 'dark');
   const [password, setPassword] = useState('');
@@ -42,10 +39,20 @@ export const PasswordVerificationForm: React.FC<PasswordVerificationFormProps> =
       />
 
       <div className="flex gap-3">
-        <Button type="submit" variant="primary" className="flex-1" disabled={isLoading}>
+        <Button
+          type="submit"
+          variant="primary"
+          className="flex-1"
+          disabled={isLoading}
+        >
           {isLoading ? 'Verificando...' : 'Acceder'}
         </Button>
-        <Button type="button" variant="outline" onClick={onCancel} disabled={isLoading}>
+        <Button
+          type="button"
+          variant="outline"
+          onClick={onCancel}
+          disabled={isLoading}
+        >
           Cancelar
         </Button>
       </div>

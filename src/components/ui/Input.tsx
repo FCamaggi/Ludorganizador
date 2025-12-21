@@ -29,7 +29,7 @@ const Input: React.FC<InputProps> = ({
   return (
     <div className="w-full">
       {label && (
-        <label 
+        <label
           className="block text-sm font-medium mb-1"
           style={{ color: theme.text.primary }}
         >
@@ -38,7 +38,7 @@ const Input: React.FC<InputProps> = ({
       )}
       <div className="relative">
         {icon && (
-          <div 
+          <div
             className="absolute left-3 top-1/2 -translate-y-1/2"
             style={{ color: theme.text.tertiary }}
           >
@@ -46,7 +46,9 @@ const Input: React.FC<InputProps> = ({
           </div>
         )}
         <input
-          className={`w-full ${icon ? 'pl-10' : 'pl-4'} pr-4 py-3 rounded-lg border focus:ring-2 focus:ring-[#FC2F00] focus:border-[#FC2F00] outline-none transition-all ${className}`}
+          className={`w-full ${
+            icon ? 'pl-10' : 'pl-4'
+          } pr-4 py-3 rounded-lg border focus:ring-2 focus:ring-[#FC2F00] focus:border-[#FC2F00] outline-none transition-all ${className}`}
           style={{
             backgroundColor: theme.bg.primary,
             borderColor: error ? COLORS.accent.DEFAULT : theme.border.medium,

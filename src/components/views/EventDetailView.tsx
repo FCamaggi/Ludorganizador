@@ -177,7 +177,7 @@ export const EventDetailView: React.FC<EventDetailViewProps> = ({
         <div>
           <div className="flex justify-between items-center mb-6">
             <div className="flex items-center gap-2">
-              <h2 
+              <h2
                 className="text-2xl font-bold"
                 style={{ color: theme.text.primary }}
               >
@@ -240,7 +240,7 @@ export const EventDetailView: React.FC<EventDetailViewProps> = ({
           <div className="flex justify-between items-center mb-6">
             <div>
               <div className="flex items-center gap-2">
-                <h2 
+                <h2
                   className="text-2xl font-bold"
                   style={{ color: theme.text.primary }}
                 >
@@ -248,7 +248,7 @@ export const EventDetailView: React.FC<EventDetailViewProps> = ({
                 </h2>
                 <Tooltip content="Una ludoteca o lista de juegos libres es una colección de juegos que traes al evento. No se asignan a una mesa específica, pero están disponibles para partidas espontáneas." />
               </div>
-              <p 
+              <p
                 className="text-sm mt-1"
                 style={{ color: theme.text.secondary }}
               >
@@ -289,11 +289,8 @@ export const EventDetailView: React.FC<EventDetailViewProps> = ({
                 >
                   <div className="flex items-start justify-between mb-3">
                     <div className="flex items-center gap-2">
-                      <Box 
-                        size={20} 
-                        style={{ color: theme.secondary }}
-                      />
-                      <h3 
+                      <Box size={20} style={{ color: theme.secondary }} />
+                      <h3
                         className="font-bold"
                         style={{ color: theme.text.primary }}
                       >
@@ -353,7 +350,7 @@ export const EventDetailView: React.FC<EventDetailViewProps> = ({
                         className="transition-colors p-1"
                         style={{ color: theme.text.tertiary }}
                         onMouseEnter={(e) => {
-                        e.currentTarget.style.color = COLORS.accent.DEFAULT;
+                          e.currentTarget.style.color = COLORS.accent.DEFAULT;
                         }}
                         onMouseLeave={(e) => {
                           e.currentTarget.style.color = theme.text.tertiary;
@@ -377,14 +374,14 @@ export const EventDetailView: React.FC<EventDetailViewProps> = ({
                       >
                         <div className="flex items-start justify-between gap-2">
                           <div className="flex-1">
-                            <p 
+                            <p
                               className="font-medium"
                               style={{ color: theme.text.primary }}
                             >
                               {game.name}
                             </p>
                             {game.note && (
-                              <p 
+                              <p
                                 className="text-sm italic mt-1"
                                 style={{ color: theme.text.secondary }}
                               >
@@ -402,7 +399,7 @@ export const EventDetailView: React.FC<EventDetailViewProps> = ({
                                 )
                               }
                               className="opacity-0 group-hover:opacity-100 transition-opacity p-1 rounded"
-                              style={{ 
+                              style={{
                                 color: COLORS.accent.DEFAULT,
                                 backgroundColor: 'transparent',
                               }}
@@ -410,7 +407,8 @@ export const EventDetailView: React.FC<EventDetailViewProps> = ({
                                 e.currentTarget.style.backgroundColor = `${COLORS.accent.DEFAULT}10`;
                               }}
                               onMouseLeave={(e) => {
-                                e.currentTarget.style.backgroundColor = 'transparent';
+                                e.currentTarget.style.backgroundColor =
+                                  'transparent';
                               }}
                               title="Eliminar este juego"
                             >
@@ -422,7 +420,7 @@ export const EventDetailView: React.FC<EventDetailViewProps> = ({
                     ))}
                   </div>
 
-                  <p 
+                  <p
                     className="text-xs mt-3"
                     style={{ color: theme.text.tertiary }}
                   >

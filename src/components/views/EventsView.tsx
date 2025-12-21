@@ -24,13 +24,13 @@ export const EventsView: React.FC<EventsViewProps> = ({
 }) => {
   const { theme: themeMode } = useTheme();
   const theme = getTheme(themeMode === 'dark');
-  
+
   return (
     <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
       <div className="flex justify-between items-center mb-8">
         <div>
           <div className="flex items-center gap-2">
-            <h1 
+            <h1
               className="text-3xl font-bold"
               style={{ color: theme.text.primary }}
             >
@@ -82,7 +82,7 @@ export const EventsView: React.FC<EventsViewProps> = ({
         ))}
 
         {events.length === 0 && !isLoading && (
-          <div 
+          <div
             className="col-span-full py-20 text-center"
             style={{ color: theme.text.tertiary }}
           >
@@ -92,11 +92,11 @@ export const EventsView: React.FC<EventsViewProps> = ({
         )}
 
         {isLoading && (
-          <div 
+          <div
             className="col-span-full py-20 text-center"
             style={{ color: theme.text.tertiary }}
           >
-            <div 
+            <div
               className="animate-spin rounded-full h-12 w-12 border-b-2 mx-auto mb-4"
               style={{ borderColor: theme.primary }}
             />

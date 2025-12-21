@@ -7,7 +7,8 @@ import React from 'react';
 import { useTheme } from '../../contexts/ThemeContext';
 import { getTheme, COLORS } from '../../constants';
 
-interface TextAreaProps extends React.TextareaHTMLAttributes<HTMLTextAreaElement> {
+interface TextAreaProps
+  extends React.TextareaHTMLAttributes<HTMLTextAreaElement> {
   label?: string;
   error?: string;
 }
@@ -27,7 +28,7 @@ const TextArea: React.FC<TextAreaProps> = ({
   return (
     <div className="w-full">
       {label && (
-        <label 
+        <label
           className="block text-sm font-medium mb-1"
           style={{ color: theme.text.primary }}
         >

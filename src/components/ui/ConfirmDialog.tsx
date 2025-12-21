@@ -37,13 +37,13 @@ export const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
     onClose();
   };
 
-  const warningBg = type === 'danger' 
-    ? `${COLORS.accent.DEFAULT}15` 
-    : `${COLORS.primary.DEFAULT}15`;
-  
-  const warningColor = type === 'danger'
-    ? COLORS.accent.DEFAULT
-    : COLORS.primary.DEFAULT;
+  const warningBg =
+    type === 'danger'
+      ? `${COLORS.accent.DEFAULT}15`
+      : `${COLORS.primary.DEFAULT}15`;
+
+  const warningColor =
+    type === 'danger' ? COLORS.accent.DEFAULT : COLORS.primary.DEFAULT;
 
   return (
     <Modal isOpen={isOpen} onClose={onClose} title={title} size="sm">
@@ -52,10 +52,7 @@ export const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
           className="flex items-center gap-3 p-4 rounded-lg"
           style={{ backgroundColor: warningBg }}
         >
-          <AlertTriangle
-            style={{ color: warningColor }}
-            size={24}
-          />
+          <AlertTriangle style={{ color: warningColor }} size={24} />
           <p className="text-sm" style={{ color: theme.text.primary }}>
             Esta acción no se puede deshacer.
           </p>

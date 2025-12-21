@@ -119,7 +119,9 @@ export const TableForm: React.FC<TableFormProps> = ({
         />
       </div>
       {errors.players && (
-        <p className="text-sm mt-1" style={{ color: theme.state.error }}>{errors.players}</p>
+        <p className="text-sm mt-1" style={{ color: theme.state.error }}>
+          {errors.players}
+        </p>
       )}
 
       <div className="flex gap-3 pt-4">

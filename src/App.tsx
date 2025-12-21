@@ -591,15 +591,18 @@ const App: React.FC = () => {
       </main>
 
       {/* Footer */}
-      <footer 
+      <footer
         className="fixed bottom-0 left-0 right-0 py-3 text-center"
         style={{
           background: `linear-gradient(to top, ${theme.bg.primary}, transparent)`,
         }}
       >
         <p className="text-xs" style={{ color: theme.text.tertiary }}>
-          Desarrollado con <span style={{ color: COLORS.accent.DEFAULT }}>❤️</span> por{' '}
-          <span className="font-medium" style={{ color: theme.text.secondary }}>Fabrizio Camaggi</span>
+          Desarrollado con{' '}
+          <span style={{ color: COLORS.accent.DEFAULT }}>❤️</span> por{' '}
+          <span className="font-medium" style={{ color: theme.text.secondary }}>
+            Fabrizio Camaggi
+          </span>
         </p>
       </footer>
 

@@ -49,14 +49,19 @@ router.post('/register', async (req, res) => {
         id: user._id,
         name: user.name,
         username: user.username,
-        email: user.email,
+        email: user.email || null,
         role: user.role,
         approved: user.approved
       }
     });
   } catch (error) {
     console.error('Error en registro:', error);
-    res.status(500).json({ error: 'Error al registrar usuario' });
+    console.error('Error stack:', error.stack);
+    console.error('Error details:', JSON.stringify(error, null, 2));
+    res.status(500).json({
+      error: 'Error al registrar usuario',
+      details: process.env.NODE_ENV === 'development' ? error.message : undefined
+    });
   }
 });
 

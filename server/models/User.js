@@ -17,7 +17,7 @@ const userSchema = new mongoose.Schema({
     type: String,
     required: false,
     unique: false,
-    sparse: true, // Permite múltiples valores null
+    sparse: false, // No usar sparse porque no queremos índice único
     lowercase: true,
     trim: true
   },

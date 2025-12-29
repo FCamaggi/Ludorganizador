@@ -369,15 +369,17 @@ const App: React.FC = () => {
     }
   };
 
-  const handleDeleteFreeGame = async (game: FreeGame) => {
+  const handleDeleteFreeGame = async (gameList: FreeGame) => {
     if (!user) return;
 
-    if (!confirm(`¿Estás seguro de eliminar el juego "${game.gameName}"?`)) {
+    const gamesCount = gameList.games.length;
+    const gamesText = gamesCount === 1 ? 'juego' : 'juegos';
+    if (!confirm(`¿Estás seguro de eliminar ${gamesCount} ${gamesText} de ${gameList.ownerName}?`)) {
       return;
     }
 
     try {
-      await api.deleteFreeGame(game.id);
+      await api.deleteFreeGame(gameList.id);
       await loadEventData();
     } catch (error: any) {
       console.error('Error deleting game:', error);
@@ -690,44 +692,55 @@ const App: React.FC = () => {
                 </div>
 
                 <div className="bg-white rounded-xl shadow-sm border border-gray-200 divide-y divide-gray-100">
-                  {freeGames.map((game) => {
+                  {freeGames.map((gameList) => {
                     const canDelete =
-                      user.id === game.ownerId || user.role === 'admin';
+                      user.id === gameList.ownerId || user.role === 'admin';
                     return (
                       <div
-                        key={game.id}
-                        className="p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4"
+                        key={gameList.id}
+                        className="p-4"
                       >
-                        <div className="flex items-start gap-3">
-                          <div className="mt-1 sm:mt-0">
-                            <Logo size={32} />
-                          </div>
-                          <div>
-                            <h4 className="font-bold text-gray-800">
-                              {game.gameName}
-                            </h4>
-                            <p className="text-sm text-gray-500">
-                              Traído por{' '}
-                              <span className="text-indigo-600 font-medium">
-                                {game.ownerName}
-                              </span>
-                            </p>
-                            {game.note && (
-                              <p className="text-xs text-gray-400 mt-1 italic">
-                                "{game.note}"
+                        <div className="flex items-start justify-between mb-3">
+                          <div className="flex items-start gap-3">
+                            <div className="mt-1 sm:mt-0">
+                              <Logo size={32} />
+                            </div>
+                            <div>
+                              <h4 className="font-bold text-gray-800">
+                                {gameList.ownerName}
+                              </h4>
+                              <p className="text-sm text-gray-500">
+                                {gameList.games.length} {gameList.games.length === 1 ? 'juego' : 'juegos'}
                               </p>
-                            )}
+                            </div>
                           </div>
+                          {canDelete && (
+                            <button
+                              onClick={() => handleDeleteFreeGame(gameList)}
+                              className="text-red-600 hover:text-red-800 transition-colors p-2"
+                              title="Eliminar lista de juegos"
+                            >
+                              <Trash2 size={20} />
+                            </button>
+                          )}
                         </div>
-                        {canDelete && (
-                          <button
-                            onClick={() => handleDeleteFreeGame(game)}
-                            className="text-red-600 hover:text-red-800 transition-colors p-2"
-                            title="Eliminar juego"
-                          >
-                            <Trash2 size={20} />
-                          </button>
-                        )}
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 ml-11">
+                          {gameList.games.map((game, idx) => (
+                            <div
+                              key={idx}
+                              className="p-2 bg-gray-50 rounded border border-gray-200"
+                            >
+                              <p className="font-medium text-gray-800 text-sm">
+                                {game.name}
+                              </p>
+                              {game.note && (
+                                <p className="text-xs text-gray-500 mt-1 italic">
+                                  "{game.note}"
+                                </p>
+                              )}
+                            </div>
+                          ))}
+                        </div>
                       </div>
                     );
                   })}

@@ -38,6 +38,12 @@ interface EventDetailViewProps {
     gameIndex: number,
     gameName: string
   ) => void;
+  onEditIndividualGame: (
+    gameListId: string,
+    gameIndex: number,
+    gameName: string,
+    gameNote: string
+  ) => void;
   onDeleteEvent: (event: GameEvent) => void;
   onArchiveEvent: (event: GameEvent) => void;
   onRefreshTables: () => void;
@@ -60,6 +66,7 @@ export const EventDetailView: React.FC<EventDetailViewProps> = ({
   onAddFreeGame,
   onDeleteFreeGame,
   onDeleteIndividualGame,
+  onEditIndividualGame,
   onDeleteEvent,
   onArchiveEvent,
   onRefreshTables,
@@ -68,9 +75,13 @@ export const EventDetailView: React.FC<EventDetailViewProps> = ({
 }) => {
   const { theme: themeMode } = useTheme();
   const theme = getTheme(themeMode === 'dark');
+  const [isDescriptionExpanded, setIsDescriptionExpanded] = React.useState(false);
   const isAdmin = currentUser.role === 'admin';
   const canDeleteEvent =
     isAdmin || (event.creatorId && event.creatorId === currentUser.id);
+
+  // Determinar si la descripción es larga (más de 200 caracteres o más de 3 líneas)
+  const isLongDescription = event.description && event.description.length > 200;
 
   return (
     <div className="animate-in fade-in zoom-in-95 duration-300">
@@ -84,14 +95,36 @@ export const EventDetailView: React.FC<EventDetailViewProps> = ({
       </button>
 
       {/* Event Details Card */}
-      <div className="bg-gradient-to-r from-[#EC7D10] to-[#FC2F00] rounded-xl shadow-lg p-6 mb-8 text-white">
+      <div 
+        className="rounded-xl shadow-lg p-6 mb-8" 
+        style={{
+          background: 'linear-gradient(135deg, #EC7D10 0%, #FC2F00 100%)',
+          color: '#FFFFFF',
+        }}
+      >
         <div className="flex items-start justify-between">
           <div className="flex-1">
-            <h1 className="text-3xl font-bold mb-2">{event.title}</h1>
+            <h1 className="text-3xl font-bold mb-2" style={{ color: '#FFFFFF' }}>{event.title}</h1>
             {event.description && (
-              <p className="text-indigo-100 mb-4">{event.description}</p>
+              <div className="mb-4">
+                <p 
+                  className={`transition-all ${!isDescriptionExpanded && isLongDescription ? 'line-clamp-3' : ''}`}
+                  style={{ opacity: 0.9, whiteSpace: 'pre-wrap', color: '#FFFFFF' }}
+                >
+                  {event.description}
+                </p>
+                {isLongDescription && (
+                  <button
+                    onClick={() => setIsDescriptionExpanded(!isDescriptionExpanded)}
+                    className="text-sm mt-2 font-medium underline"
+                    style={{ color: '#FFFFFF', opacity: 0.9 }}
+                  >
+                    {isDescriptionExpanded ? 'Ver menos' : 'Ver más'}
+                  </button>
+                )}
+              </div>
             )}
-            <div className="space-y-2">
+            <div className="space-y-2" style={{ color: '#FFFFFF' }}>
               <div className="flex items-center gap-2">
                 <MapPin size={18} />
                 <span>{event.location}</span>
@@ -104,7 +137,7 @@ export const EventDetailView: React.FC<EventDetailViewProps> = ({
           </div>
           <div className="flex items-center gap-2">
             {event.password && (
-              <div className="bg-white/20 backdrop-blur-sm rounded-lg px-3 py-2">
+              <div className="bg-white/20 backdrop-blur-sm rounded-lg px-3 py-2" style={{ color: '#FFFFFF' }}>
                 <Lock size={20} />
               </div>
             )}
@@ -113,6 +146,7 @@ export const EventDetailView: React.FC<EventDetailViewProps> = ({
                 <button
                   onClick={() => onArchiveEvent(event)}
                   className="bg-yellow-500/20 hover:bg-yellow-500/30 backdrop-blur-sm rounded-lg px-3 py-2 transition-colors"
+                  style={{ color: '#FFFFFF' }}
                   title="Archivar evento"
                 >
                   <Archive size={20} />
@@ -120,6 +154,7 @@ export const EventDetailView: React.FC<EventDetailViewProps> = ({
                 <button
                   onClick={() => onDeleteEvent(event)}
                   className="bg-red-500/20 hover:bg-red-500/30 backdrop-blur-sm rounded-lg px-3 py-2 transition-colors"
+                  style={{ color: '#FFFFFF' }}
                   title="Eliminar evento"
                 >
                   <Trash2 size={20} />
@@ -149,14 +184,18 @@ export const EventDetailView: React.FC<EventDetailViewProps> = ({
       )}
 
       {/* Tabs */}
-      <div className="flex border-b border-gray-200 mb-8">
+      <div className="flex border-b mb-8" style={{ borderColor: theme.border.light }}>
         <button
           onClick={() => onTabChange('tables')}
           className={`px-6 py-3 font-medium transition-colors relative ${
             activeTab === 'tables'
-              ? 'text-[#FC2F00] border-b-2 border-[#FC2F00]'
-              : 'text-gray-500 hover:text-gray-700'
+              ? 'border-b-2'
+              : ''
           }`}
+          style={{
+            color: activeTab === 'tables' ? COLORS.accent.DEFAULT : theme.text.secondary,
+            borderColor: activeTab === 'tables' ? COLORS.accent.DEFAULT : 'transparent',
+          }}
         >
           Mesas ({tables.length})
         </button>
@@ -164,9 +203,13 @@ export const EventDetailView: React.FC<EventDetailViewProps> = ({
           onClick={() => onTabChange('free')}
           className={`px-6 py-3 font-medium transition-colors relative ${
             activeTab === 'free'
-              ? 'text-[#FC2F00] border-b-2 border-[#FC2F00]'
-              : 'text-gray-500 hover:text-gray-700'
+              ? 'border-b-2'
+              : ''
           }`}
+          style={{
+            color: activeTab === 'free' ? COLORS.accent.DEFAULT : theme.text.secondary,
+            borderColor: activeTab === 'free' ? COLORS.accent.DEFAULT : 'transparent',
+          }}
         >
           Juegos Libres ({freeGames.length})
         </button>
@@ -189,7 +232,21 @@ export const EventDetailView: React.FC<EventDetailViewProps> = ({
               <button
                 onClick={onRefreshTables}
                 disabled={isLoading}
-                className="p-2 text-gray-600 hover:text-[#FC2F00] hover:bg-gray-100 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                className="p-2 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                style={{
+                  color: theme.text.secondary,
+                  backgroundColor: 'transparent',
+                }}
+                onMouseEnter={(e) => {
+                  if (!isLoading) {
+                    e.currentTarget.style.color = COLORS.accent.DEFAULT;
+                    e.currentTarget.style.backgroundColor = `${COLORS.accent.DEFAULT}10`;
+                  }
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.color = theme.text.secondary;
+                  e.currentTarget.style.backgroundColor = 'transparent';
+                }}
                 title="Actualizar mesas"
               >
                 <RefreshCw
@@ -205,7 +262,11 @@ export const EventDetailView: React.FC<EventDetailViewProps> = ({
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {tables.map((table) => (
+            {[...tables].sort((a, b) => {
+              const dateA = a.createdAt ? new Date(a.createdAt).getTime() : 0;
+              const dateB = b.createdAt ? new Date(b.createdAt).getTime() : 0;
+              return dateA - dateB; // Más antiguas primero
+            }).map((table) => (
               <GameTableCard
                 key={table.id}
                 table={table}
@@ -217,7 +278,7 @@ export const EventDetailView: React.FC<EventDetailViewProps> = ({
             ))}
 
             {tables.length === 0 && !isLoading && (
-              <div className="col-span-full py-16 text-center text-gray-400">
+              <div className="col-span-full py-16 text-center" style={{ color: theme.text.tertiary }}>
                 <Box size={48} className="mx-auto mb-4 opacity-20" />
                 <p>No hay mesas creadas aún.</p>
                 <p className="text-sm mt-2">¡Sé el primero en crear una!</p>
@@ -225,7 +286,7 @@ export const EventDetailView: React.FC<EventDetailViewProps> = ({
             )}
 
             {isLoading && (
-              <div className="col-span-full py-16 text-center text-gray-400">
+              <div className="col-span-full py-16 text-center" style={{ color: theme.text.tertiary }}>
                 <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600 mx-auto mb-4"></div>
                 <p>Cargando mesas...</p>
               </div>
@@ -259,7 +320,21 @@ export const EventDetailView: React.FC<EventDetailViewProps> = ({
               <button
                 onClick={onRefreshFreeGames}
                 disabled={isLoading}
-                className="p-2 text-gray-600 hover:text-[#FC2F00] hover:bg-gray-100 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                className="p-2 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                style={{
+                  color: theme.text.secondary,
+                  backgroundColor: 'transparent',
+                }}
+                onMouseEnter={(e) => {
+                  if (!isLoading) {
+                    e.currentTarget.style.color = COLORS.accent.DEFAULT;
+                    e.currentTarget.style.backgroundColor = `${COLORS.accent.DEFAULT}10`;
+                  }
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.color = theme.text.secondary;
+                  e.currentTarget.style.backgroundColor = 'transparent';
+                }}
                 title="Actualizar juegos libres"
               >
                 <RefreshCw
@@ -390,30 +465,57 @@ export const EventDetailView: React.FC<EventDetailViewProps> = ({
                             )}
                           </div>
                           {canEdit && (
-                            <button
-                              onClick={() =>
-                                onDeleteIndividualGame(
-                                  gameList.id,
-                                  idx,
-                                  game.name
-                                )
-                              }
-                              className="opacity-0 group-hover:opacity-100 transition-opacity p-1 rounded"
-                              style={{
-                                color: COLORS.accent.DEFAULT,
-                                backgroundColor: 'transparent',
-                              }}
-                              onMouseEnter={(e) => {
-                                e.currentTarget.style.backgroundColor = `${COLORS.accent.DEFAULT}10`;
-                              }}
-                              onMouseLeave={(e) => {
-                                e.currentTarget.style.backgroundColor =
-                                  'transparent';
-                              }}
-                              title="Eliminar este juego"
-                            >
-                              <Trash2 size={16} />
-                            </button>
+                            <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                              <button
+                                onClick={() =>
+                                  onEditIndividualGame(
+                                    gameList.id,
+                                    idx,
+                                    game.name,
+                                    game.note || ''
+                                  )
+                                }
+                                className="p-1 rounded"
+                                style={{
+                                  color: theme.text.secondary,
+                                  backgroundColor: 'transparent',
+                                }}
+                                onMouseEnter={(e) => {
+                                  e.currentTarget.style.backgroundColor = `${theme.text.secondary}10`;
+                                }}
+                                onMouseLeave={(e) => {
+                                  e.currentTarget.style.backgroundColor =
+                                    'transparent';
+                                }}
+                                title="Editar juego"
+                              >
+                                <Edit3 size={16} />
+                              </button>
+                              <button
+                                onClick={() =>
+                                  onDeleteIndividualGame(
+                                    gameList.id,
+                                    idx,
+                                    game.name
+                                  )
+                                }
+                                className="p-1 rounded"
+                                style={{
+                                  color: COLORS.accent.DEFAULT,
+                                  backgroundColor: 'transparent',
+                                }}
+                                onMouseEnter={(e) => {
+                                  e.currentTarget.style.backgroundColor = `${COLORS.accent.DEFAULT}10`;
+                                }}
+                                onMouseLeave={(e) => {
+                                  e.currentTarget.style.backgroundColor =
+                                    'transparent';
+                                }}
+                                title="Eliminar este juego"
+                              >
+                                <Trash2 size={16} />
+                              </button>
+                            </div>
                           )}
                         </div>
                       </div>
@@ -433,15 +535,15 @@ export const EventDetailView: React.FC<EventDetailViewProps> = ({
             })}
 
             {freeGames.length === 0 && !isLoading && (
-              <div className="col-span-full py-16 text-center text-gray-400">
+              <div className="col-span-full py-16 text-center" style={{ color: theme.text.tertiary }}>
                 <Box size={48} className="mx-auto mb-4 opacity-20" />
-                <p>No hay juegos libres agregados aún.</p>
-                <p className="text-sm mt-2">¡Agrega el primero!</p>
+                <p>No hay juegos libres aún.</p>
+                <p className="text-sm mt-2">¡Agrega tus juegos disponibles!</p>
               </div>
             )}
 
             {isLoading && (
-              <div className="col-span-full py-16 text-center text-gray-400">
+              <div className="col-span-full py-16 text-center" style={{ color: theme.text.tertiary }}>
                 <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600 mx-auto mb-4"></div>
                 <p>Cargando juegos...</p>
               </div>

@@ -74,7 +74,11 @@ const EventCard: React.FC<EventCardProps> = ({ event, onClick }) => {
             {isPrivate && <Lock size={16} style={{ color: theme.primary }} />}
           </div>
           {!isPrivate && (
-            <p className="text-sm mt-1" style={{ color: theme.text.secondary }}>
+            <p 
+              className="text-sm mt-1 line-clamp-2 cursor-help" 
+              style={{ color: theme.text.secondary }}
+              title={event.description}
+            >
               {event.description}
             </p>
           )}

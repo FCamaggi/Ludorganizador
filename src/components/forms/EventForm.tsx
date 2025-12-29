@@ -211,7 +211,7 @@ export const EventForm: React.FC<EventFormProps> = ({
           <MapPin size={16} className="inline mr-1" />
           Ubicación *
         </label>
-        <div className="flex gap-2">
+        <div className="flex flex-col sm:flex-row gap-2">
           <input
             type="text"
             value={location}
@@ -235,10 +235,10 @@ export const EventForm: React.FC<EventFormProps> = ({
               type="button"
               variant="outline"
               onClick={() => setShowMapPreview(true)}
-              className="whitespace-nowrap"
+              className="whitespace-nowrap w-full sm:w-auto"
             >
               <Map size={18} />
-              Vista Previa
+              <span className="ml-2">Vista Previa</span>
             </Button>
           )}
           {mapConfirmed && includeMap && (

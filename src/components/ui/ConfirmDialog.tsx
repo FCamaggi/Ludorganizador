@@ -53,12 +53,12 @@ export const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
           style={{ backgroundColor: warningBg }}
         >
           <AlertTriangle style={{ color: warningColor }} size={24} />
-          <p className="text-sm" style={{ color: theme.text.primary }}>
+          <p className="text-sm font-medium" style={{ color: theme.text.primary }}>
             Esta acción no se puede deshacer.
           </p>
         </div>
 
-        <p style={{ color: theme.text.primary }}>{message}</p>
+        <p className="text-base font-medium leading-relaxed" style={{ color: theme.text.primary }}>{message}</p>
 
         {additionalInfo && (
           <p className="text-sm" style={{ color: theme.text.secondary }}>

@@ -1,5 +1,7 @@
 import React, { useEffect } from 'react';
 import { CheckCircle, XCircle, AlertCircle, X } from 'lucide-react';
+import { useTheme } from '../../contexts/ThemeContext';
+import { getTheme } from '../../constants';
 
 interface ToastProps {
   message: string;
@@ -14,32 +16,47 @@ export const Toast: React.FC<ToastProps> = ({
   onClose,
   duration = 3000,
 }) => {
+  const { theme: themeMode } = useTheme();
+  const theme = getTheme(themeMode === 'dark');
+
   useEffect(() => {
     const timer = setTimeout(onClose, duration);
     return () => clearTimeout(timer);
   }, [duration, onClose]);
 
+  const successColor = '#10B981';
+  const errorColor = '#EF4444';
+  const infoColor = '#3B82F6';
+
   const icons = {
-    success: <CheckCircle className="text-green-600" size={20} />,
-    error: <XCircle className="text-red-600" size={20} />,
-    info: <AlertCircle className="text-blue-600" size={20} />,
+    success: <CheckCircle style={{ color: successColor }} size={20} />,
+    error: <XCircle style={{ color: errorColor }} size={20} />,
+    info: <AlertCircle style={{ color: infoColor }} size={20} />,
   };
 
   const bgColors = {
-    success: 'bg-green-50 border-green-200',
-    error: 'bg-red-50 border-red-200',
-    info: 'bg-blue-50 border-blue-200',
+    success: successColor,
+    error: errorColor,
+    info: infoColor,
   };
 
   return (
     <div
-      className={`fixed bottom-4 right-4 z-50 flex items-center gap-3 px-4 py-3 rounded-lg border shadow-lg animate-in slide-in-from-bottom-4 ${bgColors[type]}`}
+      className="fixed bottom-4 right-4 z-50 flex items-center gap-3 px-4 py-3 rounded-lg border shadow-lg animate-in slide-in-from-bottom-4"
+      style={{
+        backgroundColor: theme.bg.elevated,
+        borderColor: bgColors[type],
+        borderWidth: '2px',
+      }}
     >
       {icons[type]}
-      <p className="text-sm font-medium text-gray-800">{message}</p>
+      <p className="text-sm font-medium" style={{ color: theme.text.primary }}>{message}</p>
       <button
         onClick={onClose}
-        className="ml-2 text-gray-400 hover:text-gray-600 transition-colors"
+        className="ml-2 transition-colors"
+        style={{ color: theme.text.tertiary }}
+        onMouseEnter={(e) => e.currentTarget.style.color = theme.text.secondary}
+        onMouseLeave={(e) => e.currentTarget.style.color = theme.text.tertiary}
       >
         <X size={16} />
       </button>

@@ -19,6 +19,9 @@ import Modal from './components/ui/Modal';
 import Toast from './components/ui/Toast';
 import LoadingMessage from './components/ui/LoadingMessage';
 import ConfirmDialog from './components/ui/ConfirmDialog';
+import Input from './components/ui/Input';
+import TextArea from './components/ui/TextArea';
+import Button from './components/ui/Button';
 import { Logo } from './components/ui/Logo';
 import { EventsView, EventDetailView } from './components/views';
 import {
@@ -90,6 +93,12 @@ const App: React.FC = () => {
   const [isFreeGameModalOpen, setIsFreeGameModalOpen] = useState(false);
   const [isAdminPanelOpen, setIsAdminPanelOpen] = useState(false);
   const [isPasswordModalOpen, setIsPasswordModalOpen] = useState(false);
+  const [editingGame, setEditingGame] = useState<{
+    gameListId: string;
+    gameIndex: number;
+    gameName: string;
+    gameNote: string;
+  } | null>(null);
 
   // Toast State
   const [toast, setToast] = useState<{
@@ -295,10 +304,25 @@ const App: React.FC = () => {
 
   const handleAddFreeGame = async (gameData: any) => {
     try {
-      await createFreeGame(gameData);
+      // Buscar si el usuario ya tiene una colección de juegos para este evento
+      const existingCollection = freeGames.find(
+        (gameList) => gameList.ownerId === user?.id
+      );
+
+      if (existingCollection) {
+        // Agregar los nuevos juegos a la colección existente
+        const updatedGames = [...existingCollection.games, ...gameData.games];
+        await api.updateFreeGame(existingCollection.id, updatedGames);
+        await loadFreeGames();
+        showToast('Juegos agregados a tu colección', 'success');
+      } else {
+        // Crear una nueva colección
+        await createFreeGame(gameData);
+        showToast('Colección de juegos creada', 'success');
+      }
       setIsFreeGameModalOpen(false);
     } catch (error: any) {
-      alert(error.message || 'Error al agregar juego');
+      showToast(error.message || 'Error al agregar juego', 'error');
     }
   };
 
@@ -322,6 +346,29 @@ const App: React.FC = () => {
         }
       },
     });
+  };
+
+  const handleEditIndividualGame = async (
+    gameListId: string,
+    gameIndex: number,
+    newName: string,
+    newNote: string
+  ) => {
+    try {
+      const gameList = freeGames.find((g) => g.id === gameListId);
+      if (!gameList) return;
+
+      const updatedGames = gameList.games.map((game, idx) =>
+        idx === gameIndex ? { name: newName, note: newNote } : game
+      );
+
+      await api.updateFreeGame(gameListId, updatedGames);
+      await loadFreeGames();
+      setEditingGame(null);
+      showToast('Juego actualizado', 'success');
+    } catch (error: any) {
+      showToast(error.message || 'Error al actualizar juego', 'error');
+    }
   };
 
   const handleDeleteIndividualGame = async (
@@ -584,6 +631,9 @@ const App: React.FC = () => {
             }}
             onDeleteFreeGame={handleDeleteFreeGame}
             onDeleteIndividualGame={handleDeleteIndividualGame}
+            onEditIndividualGame={(gameListId, gameIndex, gameName, gameNote) =>
+              setEditingGame({ gameListId, gameIndex, gameName, gameNote })
+            }
             onDeleteEvent={handleDeleteEvent}
             onArchiveEvent={handleArchiveEvent}
             onRefreshTables={() => loadTables(activeEventId!)}
@@ -650,6 +700,57 @@ const App: React.FC = () => {
             onCancel={() => setIsFreeGameModalOpen(false)}
             isLoading={gamesLoading}
           />
+        )}
+      </Modal>
+
+      <Modal
+        isOpen={editingGame !== null}
+        onClose={() => setEditingGame(null)}
+        title="Editar Juego"
+        size="sm"
+      >
+        {editingGame && (
+          <form
+            onSubmit={(e) => {
+              e.preventDefault();
+              const formData = new FormData(e.currentTarget);
+              const newName = formData.get('gameName') as string;
+              const newNote = formData.get('gameNote') as string;
+              handleEditIndividualGame(
+                editingGame.gameListId,
+                editingGame.gameIndex,
+                newName,
+                newNote
+              );
+            }}
+            className="space-y-4"
+          >
+            <Input
+              label="Nombre del Juego"
+              name="gameName"
+              defaultValue={editingGame.gameName}
+              required
+              minLength={3}
+              placeholder="Nombre del juego"
+            />
+            <TextArea
+              label="Nota (opcional)"
+              name="gameNote"
+              defaultValue={editingGame.gameNote}
+              rows={3}
+              placeholder="Agregar una nota sobre el juego..."
+            />
+            <div className="flex justify-end gap-2">
+              <Button
+                type="button"
+                variant="secondary"
+                onClick={() => setEditingGame(null)}
+              >
+                Cancelar
+              </Button>
+              <Button type="submit">Guardar Cambios</Button>
+            </div>
+          </form>
         )}
       </Modal>
 

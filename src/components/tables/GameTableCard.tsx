@@ -31,6 +31,7 @@ const GameTableCard: React.FC<GameTableCardProps> = ({
 }) => {
   const { theme: themeMode } = useTheme();
   const theme = getTheme(themeMode === 'dark');
+  const [isDescriptionExpanded, setIsDescriptionExpanded] = React.useState(false);
 
   const isJoined = table.registeredPlayers.some((p) => p.id === currentUser.id);
   const isHost = table.hostId === currentUser.id;
@@ -76,21 +77,22 @@ const GameTableCard: React.FC<GameTableCardProps> = ({
     >
       {/* Header con Tiger Orange (secondary) */}
       <div
-        className="p-4 text-white flex-shrink-0"
+        className="p-4 flex-shrink-0"
         style={{
-          background: `linear-gradient(135deg, ${theme.secondary} 0%, ${theme.interaction} 100%)`,
+          background: 'linear-gradient(135deg, #EC7D10 0%, #EC0868 100%)',
+          color: '#FFFFFF',
         }}
       >
         <div className="flex justify-between items-start">
-          <h3 className="font-bold text-lg truncate pr-2">{table.gameName}</h3>
-          <span className="text-xs bg-white/20 px-2 py-1 rounded-full whitespace-nowrap">
+          <h3 className="font-bold text-lg truncate pr-2" style={{ color: '#FFFFFF' }} title={table.gameName}>{table.gameName}</h3>
+          <span className="text-xs px-2 py-1 rounded-full whitespace-nowrap" style={{ backgroundColor: 'rgba(255, 255, 255, 0.2)', color: '#FFFFFF' }}>
             {table.minPlayers}-{table.maxPlayers} Jug.
           </span>
         </div>
         <div className="flex items-center gap-2 mt-1">
-          <p className="text-white/90 text-xs">Host: {table.hostName}</p>
+          <p className="text-xs" style={{ opacity: 0.9, color: '#FFFFFF' }}>Host: {table.hostName}</p>
           {table.hostRole === 'admin' && (
-            <span className="text-xs px-1.5 py-0.5 rounded bg-white/30 text-white flex items-center gap-1">
+            <span className="text-xs px-1.5 py-0.5 rounded flex items-center gap-1" style={{ backgroundColor: 'rgba(255, 255, 255, 0.3)', color: '#FFFFFF' }}>
               <Award size={10} />
               Admin
             </span>
@@ -106,7 +108,8 @@ const GameTableCard: React.FC<GameTableCardProps> = ({
                 return (
                   <span
                     key={badge}
-                    className="text-xs px-1.5 py-0.5 rounded bg-white/30 text-white flex items-center gap-1"
+                    className="text-xs px-1.5 py-0.5 rounded flex items-center gap-1"
+                    style={{ backgroundColor: 'rgba(255, 255, 255, 0.3)', color: '#FFFFFF' }}
                   >
                     <Award size={10} />
                     {config.label}
@@ -119,12 +122,24 @@ const GameTableCard: React.FC<GameTableCardProps> = ({
       </div>
 
       <div className="p-4 flex-grow flex flex-col overflow-hidden">
-        <p
-          className="text-sm mb-4 line-clamp-2 italic flex-shrink-0"
-          style={{ color: theme.text.secondary }}
-        >
-          "{table.description}"
-        </p>
+        <div className="mb-4 flex-shrink-0">
+          <p
+            onClick={() => setIsDescriptionExpanded(!isDescriptionExpanded)}
+            className={`text-sm italic cursor-pointer transition-all ${isDescriptionExpanded ? '' : 'line-clamp-2'}`}
+            style={{ color: theme.text.secondary }}
+          >
+            "{table.description}"
+          </p>
+          {table.description.length > 80 && (
+            <button
+              onClick={() => setIsDescriptionExpanded(!isDescriptionExpanded)}
+              className="text-xs mt-1 font-medium"
+              style={{ color: theme.primary }}
+            >
+              {isDescriptionExpanded ? 'Ver menos' : 'Ver más'}
+            </button>
+          )}
+        </div>
 
         <div className="flex-grow overflow-hidden flex flex-col">
           <h4

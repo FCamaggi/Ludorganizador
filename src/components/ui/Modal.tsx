@@ -97,7 +97,7 @@ const Modal: React.FC<ModalProps> = ({
             <X size={20} />
           </button>
         </div>
-        <div className="p-6">{children}</div>
+        <div className="p-6" style={{ color: theme.text.primary }}>{children}</div>
       </div>
     </div>
   );

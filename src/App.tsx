@@ -105,17 +105,39 @@ const App: React.FC = () => {
   } | null>(null);
   const [shareModalContent, setShareModalContent] = useState<{
     type: 'event' | 'table';
-    data: GameEvent | GameTable;    eventTitle?: string;  } | null>(null);
+    data: GameEvent | GameTable;
+    eventTitle?: string;
+  } | null>(null);
+  const [pendingHash, setPendingHash] = useState<string | null>(null);
 
-  // Manejar navegaci\u00f3n por URL
+  // Manejar navegación por URL
   useEffect(() => {
     const handleHashChange = () => {
       const hash = window.location.hash;
       if (hash.startsWith('#/event/')) {
         const eventId = hash.replace('#/event/', '');
-        const event = events.find(e => e._id === eventId);
+        
+        // Si no hay usuario, guardar hash y no hacer nada (el usuario verá el login)
+        if (!user) {
+          setPendingHash(hash);
+          return;
+        }
+        
+        // Si hay usuario pero no hay eventos cargados todavía, guardar el hash
+        if (events.length === 0) {
+          setPendingHash(hash);
+          return;
+        }
+        
+        // Buscar el evento por _id (MongoDB) o id (TypeScript)
+        const event = events.find(e => {
+          const eId = (e as any)._id || e.id;
+          return eId === eventId;
+        });
+        
         if (event) {
           handleEventClick(event);
+          setPendingHash(null);
         }
       }
     };
@@ -123,7 +145,23 @@ const App: React.FC = () => {
     handleHashChange(); // Ejecutar al montar
     window.addEventListener('hashchange', handleHashChange);
     return () => window.removeEventListener('hashchange', handleHashChange);
-  }, [events]);
+  }, [events, user]);
+
+  // Procesar hash pendiente cuando los eventos se cargan
+  useEffect(() => {
+    if (pendingHash && user && events.length > 0) {
+      const eventId = pendingHash.replace('#/event/', '');
+      const event = events.find(e => {
+        const eId = (e as any)._id || e.id;
+        return eId === eventId;
+      });
+      
+      if (event) {
+        handleEventClick(event);
+        setPendingHash(null);
+      }
+    }
+  }, [pendingHash, user, events]);
 
   // Toast State
   const [toast, setToast] = useState<{

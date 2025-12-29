@@ -117,14 +117,15 @@ export const ShareTableModal: React.FC<ShareTableModalProps> = ({
       {/* Folleto Visual */}
       <div 
         ref={folletoRef}
-        className="rounded-xl overflow-hidden border-2"
+        className="rounded-xl border-2"
         style={{
           borderColor: theme.border.light,
+          overflow: 'visible',
         }}
       >
         {/* Header */}
         <div 
-          className="p-4"
+          className="p-4 rounded-t-xl"
           style={{
             background: 'linear-gradient(135deg, #EC7D10 0%, #EC0868 100%)',
             color: '#FFFFFF',
@@ -136,7 +137,7 @@ export const ShareTableModal: React.FC<ShareTableModalProps> = ({
 
         {/* Contenido */}
         <div 
-          className="p-4 space-y-3"
+          className="p-4 space-y-3 rounded-b-xl"
           style={{
             backgroundColor: theme.bg.elevated,
             color: theme.text.primary,
@@ -162,26 +163,38 @@ export const ShareTableModal: React.FC<ShareTableModalProps> = ({
               {table.registeredPlayers.map((player, i) => (
                 <div 
                   key={i}
-                  className="flex items-center gap-2 text-xs px-2 py-1 rounded"
+                  className="flex items-center gap-2 px-2 rounded"
                   style={{
                     backgroundColor: theme.bg.tertiary,
                     color: theme.text.primary,
+                    paddingTop: '6px',
+                    paddingBottom: '6px',
+                    fontSize: '12px',
+                    lineHeight: '16px',
+                    height: 'auto',
+                    minHeight: '28px',
                   }}
                 >
-                  <div className="w-1.5 h-1.5 rounded-full bg-green-500"></div>
-                  <span className="truncate">{player.name}</span>
+                  <div className="w-1.5 h-1.5 rounded-full bg-green-500 flex-shrink-0"></div>
+                  <span style={{ overflow: 'visible', whiteSpace: 'nowrap', textOverflow: 'clip' }}>{player.name}</span>
                 </div>
               ))}
               {Array.from({ length: spotsLeft }).map((_, i) => (
                 <div 
                   key={`empty-${i}`}
-                  className="flex items-center gap-2 text-xs px-2 py-1 rounded border border-dashed"
+                  className="flex items-center gap-2 px-2 rounded border border-dashed"
                   style={{
                     borderColor: theme.border.light,
                     color: theme.text.tertiary,
+                    paddingTop: '6px',
+                    paddingBottom: '6px',
+                    fontSize: '12px',
+                    lineHeight: '16px',
+                    height: 'auto',
+                    minHeight: '28px',
                   }}
                 >
-                  <div className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: theme.border.medium }}></div>
+                  <div className="w-1.5 h-1.5 rounded-full flex-shrink-0" style={{ backgroundColor: theme.border.medium }}></div>
                   <span>Libre</span>
                 </div>
               ))}

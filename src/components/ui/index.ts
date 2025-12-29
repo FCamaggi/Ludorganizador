@@ -14,3 +14,4 @@ export { default as TextArea } from './TextArea';
 export { Logo } from './Logo';
 export { default as ShareEventModal } from './ShareEventModal';
 export { default as ShareTableModal } from './ShareTableModal';
+export { default as TutorialModal } from './TutorialModal';

@@ -11,11 +11,13 @@ import {
   Edit3,
   RefreshCw,
   Share2,
+  HelpCircle,
 } from 'lucide-react';
 import { GameEvent, GameTable, FreeGame, AuthUser } from '../../types';
 import GameTableCard from '../tables/GameTableCard';
 import Button from '../ui/Button';
 import Tooltip from '../ui/Tooltip';
+import TutorialModal from '../ui/TutorialModal';
 import { formatEventDate } from '../../utils/dateUtils';
 import { useTheme } from '../../contexts/ThemeContext';
 import { getTheme, COLORS } from '../../constants';
@@ -83,6 +85,7 @@ export const EventDetailView: React.FC<EventDetailViewProps> = ({
   const { theme: themeMode } = useTheme();
   const theme = getTheme(themeMode === 'dark');
   const [isDescriptionExpanded, setIsDescriptionExpanded] = React.useState(false);
+  const [showTutorial, setShowTutorial] = React.useState(false);
   const isAdmin = currentUser.role === 'admin';
   const canDeleteEvent =
     isAdmin || (event.creatorId && event.creatorId === currentUser.id);
@@ -93,13 +96,34 @@ export const EventDetailView: React.FC<EventDetailViewProps> = ({
   return (
     <div className="animate-in fade-in zoom-in-95 duration-300">
       {/* Breadcrumb / Back */}
-      <button
-        onClick={onBack}
-        className="mb-6 text-sm font-medium flex items-center gap-1"
-        style={{ color: COLORS.accent.DEFAULT }}
-      >
-        &larr; Volver a Eventos
-      </button>
+      <div className="mb-6 flex items-center justify-between">
+        <button
+          onClick={onBack}
+          className="text-sm font-medium flex items-center gap-1"
+          style={{ color: COLORS.accent.DEFAULT }}
+        >
+          &larr; Volver a Eventos
+        </button>
+        <button
+          onClick={() => setShowTutorial(true)}
+          className="p-1.5 rounded-lg transition-all"
+          style={{
+            backgroundColor: theme.bg.tertiary,
+            color: theme.text.secondary,
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.color = COLORS.accent.DEFAULT;
+            e.currentTarget.style.backgroundColor = theme.state.hover;
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.color = theme.text.secondary;
+            e.currentTarget.style.backgroundColor = theme.bg.tertiary;
+          }}
+          title="Tutorial"
+        >
+          <HelpCircle size={18} />
+        </button>
+      </div>
 
       {/* Event Details Card */}
       <div 
@@ -568,6 +592,13 @@ export const EventDetailView: React.FC<EventDetailViewProps> = ({
           </div>
         </div>
       )}
+
+      {/* Tutorial Modal */}
+      <TutorialModal
+        isOpen={showTutorial}
+        onClose={() => setShowTutorial(false)}
+        variant="eventDetail"
+      />
     </div>
   );
 };

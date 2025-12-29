@@ -62,17 +62,19 @@ const AuthForm: React.FC<AuthFormProps> = ({ onComplete }) => {
         }}
       >
         {/* Toggle de tema */}
-        <button
-          onClick={toggleTheme}
-          className="absolute top-4 right-4 p-2 rounded-lg transition-all"
-          style={{
-            backgroundColor: theme.bg.tertiary,
-            color: theme.text.secondary,
-          }}
-          title={themeMode === 'dark' ? 'Modo claro' : 'Modo oscuro'}
-        >
-          {themeMode === 'dark' ? <Sun size={20} /> : <Moon size={20} />}
-        </button>
+        <div className="absolute top-4 right-4">
+          <button
+            onClick={toggleTheme}
+            className="p-2 rounded-lg transition-all"
+            style={{
+              backgroundColor: theme.bg.tertiary,
+              color: theme.text.secondary,
+            }}
+            title={themeMode === 'dark' ? 'Modo claro' : 'Modo oscuro'}
+          >
+            {themeMode === 'dark' ? <Sun size={20} /> : <Moon size={20} />}
+          </button>
+        </div>
 
         <div className="text-center mb-8">
           <div className="flex items-center justify-center mx-auto mb-4">

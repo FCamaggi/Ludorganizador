@@ -19,9 +19,11 @@ import {
   UserPlus,
   Edit3,
   Check,
+  HelpCircle,
 } from 'lucide-react';
 import Button from '../ui/Button';
 import Modal from '../ui/Modal';
+import TutorialModal from '../ui/TutorialModal';
 import { API_CONFIG, STORAGE_KEYS, getTheme } from '../../constants';
 import { useTheme } from '../../contexts/ThemeContext';
 
@@ -77,6 +79,7 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
     id: string;
     title: string;
   } | null>(null);
+  const [showTutorial, setShowTutorial] = useState(false);
 
   const authHeaders = () => {
     const authUserStr = localStorage.getItem(STORAGE_KEYS.AUTH_USER);
@@ -593,6 +596,14 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
           <div className="flex items-center justify-between p-3 sm:p-6 border-b transition-colors" style={{ borderColor: theme.border.light, backgroundColor: theme.bg.elevated }}>
             <h1 className="text-lg sm:text-2xl font-bold" style={{ color: theme.text.primary }}>Admin Panel</h1>
             <div className="flex items-center gap-2 sm:gap-4">
+              <button 
+                onClick={() => setShowTutorial(true)}
+                className="p-2 transition-colors hover:opacity-70" 
+                style={{ color: theme.text.secondary }}
+                title="Tutorial de Administración"
+              >
+                <HelpCircle size={20} className="sm:w-6 sm:h-6" />
+              </button>
               <button className="relative p-2 transition-colors" style={{ color: theme.text.secondary }}>
                 <Bell size={20} className="sm:w-6 sm:h-6" />
                 {stats && (stats.pendingUsers > 0 || stats.archivedEvents > 0) && (
@@ -1343,6 +1354,12 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
             </div>
           </Modal>
         )}
+
+        <TutorialModal
+          isOpen={showTutorial}
+          onClose={() => setShowTutorial(false)}
+          variant="admin"
+        />
       </div>
     </div>
   );

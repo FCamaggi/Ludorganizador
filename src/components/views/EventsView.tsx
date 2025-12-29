@@ -1,9 +1,10 @@
-import React, { useMemo } from 'react';
-import { Calendar, Plus, RefreshCw, ChevronDown } from 'lucide-react';
+import React, { useMemo, useState } from 'react';
+import { Calendar, Plus, RefreshCw, ChevronDown, HelpCircle } from 'lucide-react';
 import { GameEvent } from '../../types';
 import EventCard from '../events/EventCard';
 import Button from '../ui/Button';
 import Tooltip from '../ui/Tooltip';
+import TutorialModal from '../ui/TutorialModal';
 import { useTheme } from '../../contexts/ThemeContext';
 import { getTheme, COLORS } from '../../constants';
 
@@ -25,6 +26,7 @@ export const EventsView: React.FC<EventsViewProps> = ({
   const { theme: themeMode } = useTheme();
   const theme = getTheme(themeMode === 'dark');
   const [showPastEvents, setShowPastEvents] = React.useState(false);
+  const [showTutorial, setShowTutorial] = useState(false);
 
   // Separar y ordenar eventos
   const { upcomingEvents, pastEvents } = useMemo(() => {
@@ -80,6 +82,25 @@ export const EventsView: React.FC<EventsViewProps> = ({
           </p>
         </div>
         <div className="flex gap-2">
+          <button
+            onClick={() => setShowTutorial(true)}
+            className="p-2 rounded-lg transition-all"
+            style={{
+              backgroundColor: theme.bg.tertiary,
+              color: theme.text.secondary,
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.color = COLORS.accent.DEFAULT;
+              e.currentTarget.style.backgroundColor = theme.state.hover;
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.color = theme.text.secondary;
+              e.currentTarget.style.backgroundColor = theme.bg.tertiary;
+            }}
+            title="Tutorial"
+          >
+            <HelpCircle size={20} />
+          </button>
           <button
             onClick={onRefresh}
             disabled={isLoading}
@@ -205,6 +226,13 @@ export const EventsView: React.FC<EventsViewProps> = ({
           <p>Cargando eventos...</p>
         </div>
       )}
+
+      {/* Tutorial Modal */}
+      <TutorialModal
+        isOpen={showTutorial}
+        onClose={() => setShowTutorial(false)}
+        variant="events"
+      />
     </div>
   );
 };

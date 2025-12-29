@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import {
-  Dice6,
   UserIcon as User,
   LogOut,
   Shield,
@@ -20,6 +19,7 @@ import Modal from './components/ui/Modal';
 import Toast from './components/ui/Toast';
 import LoadingMessage from './components/ui/LoadingMessage';
 import ConfirmDialog from './components/ui/ConfirmDialog';
+import { Logo } from './components/ui/Logo';
 import { EventsView, EventDetailView } from './components/views';
 import {
   EventForm,
@@ -421,8 +421,11 @@ const App: React.FC = () => {
             className="flex items-center gap-2 cursor-pointer"
             onClick={handleBackToEvents}
           >
-            <div className="bg-white/20 backdrop-blur-sm text-white p-1.5 rounded-lg">
-              <Dice6 size={24} />
+            <div 
+              className="p-2 rounded-lg shadow-md transition-colors duration-200"
+              style={{ backgroundColor: theme.bg.elevated }}
+            >
+              <Logo size={36} />
             </div>
             <span className="font-bold text-xl tracking-tight text-white">
               Ludorganizador

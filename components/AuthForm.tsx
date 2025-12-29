@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
-import { Dice6, Lock, Mail, User as UserIcon } from 'lucide-react';
+import { Lock, Mail, User as UserIcon } from 'lucide-react';
 import Button from './Button';
+import { Logo } from './src/components/ui/Logo';
 import { AuthUser } from '../types';
 import * as api from '../services/apiService';
 
@@ -43,8 +44,8 @@ const AuthForm: React.FC<AuthFormProps> = ({ onComplete }) => {
     <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
       <div className="bg-white p-8 rounded-2xl shadow-xl max-w-md w-full border border-gray-100">
         <div className="text-center mb-8">
-          <div className="w-16 h-16 bg-indigo-100 text-indigo-600 rounded-2xl flex items-center justify-center mx-auto mb-4">
-            <Dice6 size={32} />
+          <div className="flex items-center justify-center mx-auto mb-4">
+            <Logo size={64} />
           </div>
           <h1 className="text-2xl font-bold text-gray-900">
             {isLogin ? 'Iniciar Sesión' : 'Crear Cuenta'}

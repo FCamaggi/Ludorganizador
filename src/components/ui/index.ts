@@ -11,3 +11,4 @@ export { default as LoadingMessage } from './LoadingMessage';
 export { default as Tooltip } from './Tooltip';
 export { default as Input } from './Input';
 export { default as TextArea } from './TextArea';
+export { Logo } from './Logo';

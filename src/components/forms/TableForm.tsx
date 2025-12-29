@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
-import { Dice6, Users } from 'lucide-react';
+import { Users } from 'lucide-react';
 import Button from '../ui/Button';
+import { Logo } from '../ui/Logo';
 import Input from '../ui/Input';
 import TextArea from '../ui/TextArea';
 import { CreateTableData } from '../../types';
@@ -77,7 +78,7 @@ export const TableForm: React.FC<TableFormProps> = ({
     <form onSubmit={handleSubmit} className="space-y-4">
       <Input
         label="Nombre del Juego *"
-        icon={<Dice6 size={16} />}
+        icon={<Logo size={16} />}
         value={gameName}
         onChange={(e) => setGameName(e.target.value)}
         placeholder="ej. Catan, Wingspan, Terraforming Mars..."

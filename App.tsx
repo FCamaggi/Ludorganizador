@@ -6,7 +6,6 @@ import {
   Users,
   Plus,
   User as UserIcon,
-  Dice6,
   Box,
   LogOut,
   MessageSquare,
@@ -21,6 +20,7 @@ import Modal from './components/Modal';
 import Button from './components/Button';
 import AuthForm from './components/AuthForm';
 import AdminPanel from './components/AdminPanel';
+import { Logo } from './src/components/ui/Logo';
 import { GameEvent, GameTable, FreeGame, AuthUser } from './types';
 import * as api from './services/apiService';
 
@@ -470,8 +470,8 @@ const App: React.FC = () => {
               setActiveEventId(null);
             }}
           >
-            <div className="bg-indigo-600 text-white p-1.5 rounded-lg">
-              <Dice6 size={24} />
+            <div className="bg-white p-1.5 rounded-lg shadow-sm border border-gray-100">
+              <Logo size={32} />
             </div>
             <span className="font-bold text-xl tracking-tight text-gray-900">
               Ludorganizador
@@ -699,8 +699,8 @@ const App: React.FC = () => {
                         className="p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4"
                       >
                         <div className="flex items-start gap-3">
-                          <div className="bg-teal-50 text-teal-600 p-2 rounded-lg mt-1 sm:mt-0">
-                            <Dice6 size={20} />
+                          <div className="mt-1 sm:mt-0">
+                            <Logo size={32} />
                           </div>
                           <div>
                             <h4 className="font-bold text-gray-800">

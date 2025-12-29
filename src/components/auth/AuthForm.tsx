@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
-import { Dice6, Lock, User as UserIcon, Sun, Moon } from 'lucide-react';
+import { Lock, User as UserIcon, Sun, Moon } from 'lucide-react';
 import Button from '../ui/Button';
+import { Logo } from '../ui/Logo';
 import { AuthUser } from '../../types';
 import * as api from '../../services/apiService';
 import { useTheme } from '../../contexts/ThemeContext';
@@ -74,8 +75,8 @@ const AuthForm: React.FC<AuthFormProps> = ({ onComplete }) => {
         </button>
 
         <div className="text-center mb-8">
-          <div className="w-16 h-16 bg-gradient-to-br from-[#FFBC0A] to-[#EC7D10] text-white rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg">
-            <Dice6 size={32} />
+          <div className="flex items-center justify-center mx-auto mb-4">
+            <Logo size={64} />
           </div>
           <h1
             className="text-2xl font-bold"

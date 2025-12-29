@@ -1,10 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Users } from 'lucide-react';
 import Button from '../ui/Button';
 import { Logo } from '../ui/Logo';
 import Input from '../ui/Input';
 import TextArea from '../ui/TextArea';
-import { CreateTableData } from '../../types';
+import { CreateTableData, GameTable } from '../../types';
 import {
   isValidTitle,
   isValidDescription,
@@ -18,6 +18,7 @@ interface TableFormProps {
   onSubmit: (data: CreateTableData) => void;
   onCancel: () => void;
   isLoading?: boolean;
+  initialData?: GameTable;
 }
 
 export const TableForm: React.FC<TableFormProps> = ({
@@ -25,14 +26,25 @@ export const TableForm: React.FC<TableFormProps> = ({
   onSubmit,
   onCancel,
   isLoading = false,
+  initialData,
 }) => {
   const { theme: themeMode } = useTheme();
   const theme = getTheme(themeMode === 'dark');
-  const [gameName, setGameName] = useState('');
-  const [description, setDescription] = useState('');
-  const [minPlayers, setMinPlayers] = useState(2);
-  const [maxPlayers, setMaxPlayers] = useState(4);
+  const [gameName, setGameName] = useState(initialData?.gameName || '');
+  const [description, setDescription] = useState(initialData?.description || '');
+  const [minPlayers, setMinPlayers] = useState(initialData?.minPlayers || 2);
+  const [maxPlayers, setMaxPlayers] = useState(initialData?.maxPlayers || 4);
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
+
+  // Actualizar campos cuando cambie initialData
+  useEffect(() => {
+    if (initialData) {
+      setGameName(initialData.gameName);
+      setDescription(initialData.description);
+      setMinPlayers(initialData.minPlayers);
+      setMaxPlayers(initialData.maxPlayers);
+    }
+  }, [initialData]);
 
   const validate = (): boolean => {
     const newErrors: { [key: string]: string } = {};

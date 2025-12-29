@@ -58,6 +58,12 @@ export const useTables = (eventId: string | null) => {
     await loadTables();
   };
 
+  const updateTable = async (tableId: string, tableData: CreateTableData): Promise<GameTable> => {
+    const updatedTable = await api.updateTable(tableId, tableData);
+    await loadTables();
+    return updatedTable;
+  };
+
   return {
     tables,
     loading,
@@ -67,5 +73,6 @@ export const useTables = (eventId: string | null) => {
     joinTable,
     leaveTable,
     deleteTable,
+    updateTable,
   };
 };

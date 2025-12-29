@@ -10,6 +10,7 @@ import {
   Award,
   Edit3,
   RefreshCw,
+  Share2,
 } from 'lucide-react';
 import { GameEvent, GameTable, FreeGame, AuthUser } from '../../types';
 import GameTableCard from '../tables/GameTableCard';
@@ -31,6 +32,7 @@ interface EventDetailViewProps {
   onJoinTable: (table: GameTable) => void;
   onLeaveTable: (table: GameTable) => void;
   onDeleteTable: (table: GameTable) => void;
+  onEditTable: (table: GameTable) => void;
   onAddFreeGame: () => void;
   onDeleteFreeGame: (game: FreeGame) => void;
   onDeleteIndividualGame: (
@@ -48,6 +50,8 @@ interface EventDetailViewProps {
   onArchiveEvent: (event: GameEvent) => void;
   onRefreshTables: () => void;
   onRefreshFreeGames: () => void;
+  onShareEvent: (event: GameEvent) => void;
+  onShareTable: (table: GameTable, eventTitle: string) => void;
   isLoading?: boolean;
 }
 
@@ -63,6 +67,7 @@ export const EventDetailView: React.FC<EventDetailViewProps> = ({
   onJoinTable,
   onLeaveTable,
   onDeleteTable,
+  onEditTable,
   onAddFreeGame,
   onDeleteFreeGame,
   onDeleteIndividualGame,
@@ -71,6 +76,8 @@ export const EventDetailView: React.FC<EventDetailViewProps> = ({
   onArchiveEvent,
   onRefreshTables,
   onRefreshFreeGames,
+  onShareEvent,
+  onShareTable,
   isLoading = false,
 }) => {
   const { theme: themeMode } = useTheme();
@@ -141,6 +148,14 @@ export const EventDetailView: React.FC<EventDetailViewProps> = ({
                 <Lock size={20} />
               </div>
             )}
+            <button
+              onClick={() => onShareEvent(event)}
+              className="bg-blue-500/20 hover:bg-blue-500/30 backdrop-blur-sm rounded-lg px-3 py-2 transition-colors"
+              style={{ color: '#FFFFFF' }}
+              title="Compartir evento"
+            >
+              <Share2 size={20} />
+            </button>
             {canDeleteEvent && (
               <>
                 <button
@@ -274,6 +289,8 @@ export const EventDetailView: React.FC<EventDetailViewProps> = ({
                 onJoin={() => onJoinTable(table)}
                 onLeave={() => onLeaveTable(table)}
                 onDelete={() => onDeleteTable(table)}
+                onEdit={() => onEditTable(table)}
+                onShare={() => onShareTable(table, event.title)}
               />
             ))}
 

@@ -23,6 +23,8 @@ import Input from './components/ui/Input';
 import TextArea from './components/ui/TextArea';
 import Button from './components/ui/Button';
 import { Logo } from './components/ui/Logo';
+import ShareEventModal from './components/ui/ShareEventModal';
+import ShareTableModal from './components/ui/ShareTableModal';
 import { EventsView, EventDetailView } from './components/views';
 import {
   EventForm,
@@ -71,6 +73,7 @@ const App: React.FC = () => {
     joinTable,
     leaveTable,
     deleteTable,
+    updateTable,
     loadTables,
   } = useTables(activeEventId);
 
@@ -93,12 +96,34 @@ const App: React.FC = () => {
   const [isFreeGameModalOpen, setIsFreeGameModalOpen] = useState(false);
   const [isAdminPanelOpen, setIsAdminPanelOpen] = useState(false);
   const [isPasswordModalOpen, setIsPasswordModalOpen] = useState(false);
+  const [editingTable, setEditingTable] = useState<GameTable | null>(null);
   const [editingGame, setEditingGame] = useState<{
     gameListId: string;
     gameIndex: number;
     gameName: string;
     gameNote: string;
   } | null>(null);
+  const [shareModalContent, setShareModalContent] = useState<{
+    type: 'event' | 'table';
+    data: GameEvent | GameTable;    eventTitle?: string;  } | null>(null);
+
+  // Manejar navegaci\u00f3n por URL
+  useEffect(() => {
+    const handleHashChange = () => {
+      const hash = window.location.hash;
+      if (hash.startsWith('#/event/')) {
+        const eventId = hash.replace('#/event/', '');
+        const event = events.find(e => e._id === eventId);
+        if (event) {
+          handleEventClick(event);
+        }
+      }
+    };
+
+    handleHashChange(); // Ejecutar al montar
+    window.addEventListener('hashchange', handleHashChange);
+    return () => window.removeEventListener('hashchange', handleHashChange);
+  }, [events]);
 
   // Toast State
   const [toast, setToast] = useState<{
@@ -260,6 +285,19 @@ const App: React.FC = () => {
     }
   };
 
+  const handleEditTable = async (tableData: any) => {
+    if (!editingTable) return;
+    try {
+      await updateTable(editingTable.id, tableData);
+      showToast('Mesa actualizada correctamente', 'success');
+      setEditingTable(null);
+      setIsTableModalOpen(false);
+      if (activeEventId) loadTables(activeEventId);
+    } catch (error: any) {
+      showToast(error.message || 'Error al actualizar mesa', 'error');
+    }
+  };
+
   const handleJoinTable = async (table: GameTable) => {
     if (!user) return;
     if (table.registeredPlayers.length >= table.maxPlayers) return;
@@ -300,6 +338,14 @@ const App: React.FC = () => {
         }
       },
     });
+  };
+
+  const handleShareEvent = (event: GameEvent) => {
+    setShareModalContent({ type: 'event', data: event });
+  };
+
+  const handleShareTable = (table: GameTable, eventTitle: string) => {
+    setShareModalContent({ type: 'table', data: table, eventTitle });
   };
 
   const handleAddFreeGame = async (gameData: any) => {
@@ -619,6 +665,17 @@ const App: React.FC = () => {
             onJoinTable={handleJoinTable}
             onLeaveTable={handleLeaveTable}
             onDeleteTable={handleDeleteTable}
+            onEditTable={(table) => {
+              if (user.role === 'nuevo') {
+                showToast(
+                  'Debes esperar a que un administrador apruebe tu cuenta',
+                  'error'
+                );
+                return;
+              }
+              setEditingTable(table);
+              setIsTableModalOpen(true);
+            }}
             onAddFreeGame={() => {
               if (user.role === 'nuevo') {
                 showToast(
@@ -638,6 +695,8 @@ const App: React.FC = () => {
             onArchiveEvent={handleArchiveEvent}
             onRefreshTables={() => loadTables(activeEventId!)}
             onRefreshFreeGames={() => loadFreeGames(activeEventId!)}
+            onShareEvent={handleShareEvent}
+            onShareTable={handleShareTable}
             isLoading={tablesLoading || gamesLoading}
           />
         )}
@@ -675,15 +734,22 @@ const App: React.FC = () => {
 
       <Modal
         isOpen={isTableModalOpen}
-        onClose={() => setIsTableModalOpen(false)}
-        title="Crear Nueva Mesa"
+        onClose={() => {
+          setIsTableModalOpen(false);
+          setEditingTable(null);
+        }}
+        title={editingTable ? 'Editar Mesa' : 'Crear Nueva Mesa'}
       >
         {activeEventId && (
           <TableForm
             eventId={activeEventId}
-            onSubmit={handleCreateTable}
-            onCancel={() => setIsTableModalOpen(false)}
+            onSubmit={editingTable ? handleEditTable : handleCreateTable}
+            onCancel={() => {
+              setIsTableModalOpen(false);
+              setEditingTable(null);
+            }}
             isLoading={tablesLoading}
+            initialData={editingTable || undefined}
           />
         )}
       </Modal>
@@ -805,6 +871,28 @@ const App: React.FC = () => {
           />
         </Modal>
       )}
+
+      <Modal
+        isOpen={shareModalContent !== null}
+        onClose={() => setShareModalContent(null)}
+        title={shareModalContent?.type === 'event' ? 'Compartir Evento' : 'Compartir Mesa'}
+        size="md"
+      >
+        {shareModalContent?.type === 'event' && (
+          <ShareEventModal
+            event={shareModalContent.data as GameEvent}
+            onClose={() => setShareModalContent(null)}
+          />
+        )}
+        {shareModalContent?.type === 'table' && (
+          <ShareTableModal
+            table={shareModalContent.data as GameTable}
+            eventId={activeEventId || ''}
+            eventTitle={shareModalContent.eventTitle || ''}
+            onClose={() => setShareModalContent(null)}
+          />
+        )}
+      </Modal>
 
       {toast.show && (
         <Toast

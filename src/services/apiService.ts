@@ -303,6 +303,24 @@ export const deleteTable = async (tableId: string): Promise<void> => {
   await handleResponse<void>(response);
 };
 
+/**
+ * Actualiza una mesa existente
+ */
+export const updateTable = async (
+  tableId: string,
+  tableData: CreateTableData
+): Promise<GameTable> => {
+  const response = await fetch(
+    `${API_CONFIG.BASE_URL}${API_ROUTES.TABLES.BY_ID(tableId)}`,
+    {
+      method: 'PUT',
+      headers: authHeaders(),
+      body: JSON.stringify(tableData),
+    }
+  );
+  return handleResponse<GameTable>(response);
+};
+
 // ============ FREE GAMES ============
 
 /**

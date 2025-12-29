@@ -4,7 +4,7 @@
  */
 
 import React from 'react';
-import { Trash2, Award } from 'lucide-react';
+import { Trash2, Award, Edit3, Share2 } from 'lucide-react';
 import { GameTable, AuthUser } from '../../types';
 import Button from '../ui/Button';
 import { useTheme } from '../../contexts/ThemeContext';
@@ -16,6 +16,8 @@ interface GameTableCardProps {
   onJoin: () => void;
   onLeave: () => void;
   onDelete: () => void;
+  onEdit: () => void;
+  onShare: () => void;
 }
 
 /**
@@ -28,6 +30,8 @@ const GameTableCard: React.FC<GameTableCardProps> = ({
   onJoin,
   onLeave,
   onDelete,
+  onEdit,
+  onShare,
 }) => {
   const { theme: themeMode } = useTheme();
   const theme = getTheme(themeMode === 'dark');
@@ -69,7 +73,7 @@ const GameTableCard: React.FC<GameTableCardProps> = ({
 
   return (
     <div
-      className="rounded-xl shadow-sm border overflow-hidden flex flex-col h-[400px]"
+      className="rounded-xl shadow-sm border overflow-hidden flex flex-col h-[450px]"
       style={{
         backgroundColor: theme.bg.elevated,
         borderColor: theme.border.light,
@@ -198,11 +202,11 @@ const GameTableCard: React.FC<GameTableCardProps> = ({
           </div>
         </div>
 
-        <div className="mt-auto pt-2 space-y-2 flex-shrink-0">
+        <div className="mt-auto pt-2 flex-shrink-0">
           {isJoined ? (
             <Button
               variant="outline"
-              className="w-full text-red-500 border-red-200 hover:bg-red-50 hover:border-red-500"
+              className="w-full text-red-500 border-red-200 hover:bg-red-50 hover:border-red-500 py-3"
               onClick={onLeave}
             >
               Salir de la mesa
@@ -210,23 +214,43 @@ const GameTableCard: React.FC<GameTableCardProps> = ({
           ) : (
             <Button
               variant="primary"
-              className="w-full"
+              className="w-full py-3"
               disabled={isFull}
               onClick={onJoin}
             >
               {isFull ? 'Completo' : 'Inscribirse'}
             </Button>
           )}
-          {canDelete && (
-            <Button
-              variant="outline"
-              className="w-full text-red-600 border-red-300 hover:bg-red-50"
-              onClick={onDelete}
+          <div className="flex gap-2 mt-2">
+            <button
+              onClick={onShare}
+              className="flex-1 p-2.5 rounded-lg border-2 border-green-300 hover:bg-green-50 transition-colors flex items-center justify-center"
+              style={{ color: theme.text.primary }}
+              title="Compartir mesa"
             >
-              <Trash2 size={16} />
-              <span className="ml-1">Eliminar Mesa</span>
-            </Button>
-          )}
+              <Share2 size={20} className="text-green-600" />
+            </button>
+            {canDelete && (
+              <>
+                <button
+                  onClick={onEdit}
+                  className="flex-1 p-2.5 rounded-lg border-2 border-blue-300 hover:bg-blue-50 transition-colors flex items-center justify-center"
+                  style={{ color: theme.text.primary }}
+                  title="Editar mesa"
+                >
+                  <Edit3 size={20} className="text-blue-600" />
+                </button>
+                <button
+                  onClick={onDelete}
+                  className="flex-1 p-2.5 rounded-lg border-2 border-red-300 hover:bg-red-50 transition-colors flex items-center justify-center"
+                  style={{ color: theme.text.primary }}
+                  title="Eliminar mesa"
+                >
+                  <Trash2 size={20} className="text-red-600" />
+                </button>
+              </>
+            )}
+          </div>
         </div>
       </div>
     </div>
